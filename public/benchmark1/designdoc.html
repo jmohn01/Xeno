@@ -1,0 +1,166 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="xeno">Xeno</h1>
+    <h2 id="introduction">Introduction</h2>
+    <p>This document describes a game called &quot;Xeno&quot;, which is desigend
+      to be a 2D Tower Defense game. The game will employ sprite-based
+      animation, tiled backgrounds, collision detection, navmesh, physics, AI,
+      particle effects, memory management, and real-time editing of the game
+      world. </p>
+    <h2 id="technology">Technology</h2>
+    <p>Xeno will be developed as an web application using Wolfie2D. WebGL is
+      used for rendering and firebase is used for deploying.</p>
+    <h2 id="back-story">Back Story</h2>
+    <p>We are in a team of intergalactic explorers called &quot;Xeno&quot;. As
+      we set out to gather resrouces for our weakening colony, we landed on a
+      seemingly unoccupied planet with everything we ever dream of. However,
+      when the night comes, we encountered the most vicious species we have ever
+      seen, &quot;UMA&quot;. We have set up a cynosural field generator. All we
+      need to do now, is to defend and hope the dawn will come. </p>
+    <h2 id="objective">Objective</h2>
+    <p>We are playing as the commander of Xeno. Our job is to coordinate
+      resources to defned against endless wave of enemies until reinforcements
+      joins us. We will need to set up walls and turrets to defend against UMAs.</p>
+    <h2 id="gameplay">Gameplay</h2>
+    <p>The game will work like a fixed camera, 2D top down tower defense. The
+      user will mainly interact with the game world by placing down or selling
+      turrets, walls, and traps. </p>
+    <p>Each wall, turrent, and trap will be upgradable by using an in game
+      currency which will be gained by killing UMAs or building currency
+      generating turret.</p>
+    <p>The user will need to spend his resources wisely or it will result in the
+      destruction of cynosural field generator.</p>
+    <p>The game will be set up as follows: </p>
+    <ul>
+      <li>The cynosural field generator will be located in the center of the
+        game world. </li>
+      <li>Enemies will come from all side of the map. </li>
+    </ul>
+    <h2 id="controls">Controls</h2>
+    <p>Left Click</p>
+    <ul>
+      <li>When selected nothing<ul>
+          <li>Clicking on either a wall, trap, or turret will result in that
+            particular object being selected</li>
+        </ul>
+      </li>
+      <li>When selected something<ul>
+          <li>An overlay will pop up. The user can decide whether he wants to
+            upgrade (if upgradable) or to sell something.</li>
+        </ul>
+      </li>
+      <li>When in edit mode (in between waves)<ul>
+          <li>The user can select what to build by using an overlay.</li>
+          <li>After the user has selected something, the user can hover his
+            mouse over the entire map to see what his base will look like after
+            that object has been placed.</li>
+          <li>The user can start the next wave when they think they are ready.</li>
+        </ul>
+      </li>
+      <li>ESC <ul>
+          <li>Pause the game and shows the pause game menu</li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="gui">GUI</h2>
+    <ul>
+      <li><p><strong>Splash Screen</strong>
+          Features the name and the logo of our game. Click on the screen will
+          lead a player to the home screen. </p>
+      </li>
+      <li><p><strong>Home Screen</strong>
+          A start, about, and control button will be presented. The user can
+          click on the start button and they will be led to level selection. The
+          user can checkout who made the game, etc. by clicking on the about
+          button.</p>
+      </li>
+      <li><p><strong>Levels Selection Screen</strong>
+          A list of buttons that let a user to pick which level they wanna play.
+          A user has to unlock levels (by beating the previous levels) before
+          they can choose them from this menu.</p>
+      </li>
+      <li><p><strong>Control Screen</strong>
+          A boiled down version of controls (listed above) will be presented.
+        </p>
+      </li>
+      <li><p><strong>Help Screen</strong>
+          This screen features the developers name + technology used. There is
+          also a list of cheatcodes that helps developers to test out the game.</p>
+      </li>
+      <li><p><strong>In Game UI</strong></p>
+        <ul>
+          <li>An indicator showing how far in the level the user is.</li>
+          <li>The amount of in game currency the user has.</li>
+          <li>Tooltip / Description about a particular object. (Only if an
+            object is selected)</li>
+          <li>HP Bar for damaged actors. (?)</li>
+          <li>All the functionalities discussed in the Gameplay part will be
+            provided using this UI. The UI is essentially a bar sitting at the
+            right side of the screen. It is a menu that features multiple buttons
+            and each button leads to their submenu. </li>
+        </ul>
+      </li>
+      <li><strong>In Game Menu</strong><ul>
+          <li>Exit<ul>
+              <li>Quit the game</li>
+            </ul>
+          </li>
+          <li>Controls<ul>
+              <li>Show control screen again</li>
+            </ul>
+          </li>
+          <li>Help<ul>
+              <li>Show help screen again</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="artwork">Artwork</h2>
+    <ul>
+      <li>Walls<ul>
+          <li>Featuring Mud, Wood, Steel, Carbon Fiber. </li>
+        </ul>
+      </li>
+      <li>Turrets<ul>
+          <li>Each turret will have a firing animation, dying animation, and
+            idle animation. </li>
+        </ul>
+      </li>
+      <li>Enemies<ul>
+          <li>Each enemy will have a firing animation,
+            damaged animation, dying animation, walking left, and walking right
+            animation.</li>
+        </ul>
+      </li>
+      <li>Traps<ul>
+          <li>Static Sprites. </li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="sound-effects">Sound Effects</h2>
+    <ul>
+      <li>Victory / Losing sound</li>
+      <li>Firing sound for turrets</li>
+      <li>Dying sound for enemies</li>
+    </ul>
+    <h2 id="music">Music</h2>
+    <ul>
+      <li>BGM for levels</li>
+    </ul>
+    <h2 id="splashscreen"> Splash Screen </h2>
+    <img src="./img/splash.png">
+    <h2 id="mainscreen"> Main Screen </h2>
+    <img src="./img/main.png">
+    <h2 id="levelscreen"> Level Screen </h2>
+    <img src="./img/level.png">
+    <h2 id="controlscreen"> Control Screen </h2>
+    <img src="./img/control.png">
+    <h2 id="helpscreen"> Help Screen </h2>
+    <img src="./img/help.png">
+    <h2 id="gamescreen"> In Game Screen </h2>
+    <img src="./img/game.png" width="1055" height="944">
+    <h2 id="pausescreen"> Pause Screen </h2>
+    <img src="./img/pause.png">
+  </body></html>
