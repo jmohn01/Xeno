@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "public",
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "/designdoc.html",
+        "type": 301
+      },
+      {
+        "source": "/benchmark1",
+        "destination": "/designdoc.html",
+        "type": 301
+      }
+    ],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
