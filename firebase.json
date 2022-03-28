@@ -4,7 +4,7 @@
     "redirects": [
       {
         "source": "/",
-        "destination": "/designdoc.html",
+        "destination": "/menu.html",
         "type": 301
       },
       {
