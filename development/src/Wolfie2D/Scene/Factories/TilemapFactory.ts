@@ -41,6 +41,7 @@ export default class TilemapFactory {
 	add = (key: string, scale: Vec2 = new Vec2(1, 1)): Array<Layer> => {
         // Get Tilemap Data
         let tilemapData = this.resourceManager.getTilemap(key);
+        console.log(tilemapData);
 
         // Set the constructor for this tilemap to either be orthographic or isometric
         let constr: new(...args: any) => Tilemap;

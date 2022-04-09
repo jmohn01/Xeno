@@ -247,7 +247,7 @@ export default class Input {
 	 * @returns True if the mouse was just pressed, false otherwise
 	 */
 	static isMouseJustPressed(mouseButton?: number): boolean {
-		if (mouseButton) {
+		if (mouseButton || mouseButton === 0) {
 			return Input.mouseJustPressed && !Input.mouseDisabled && mouseButton == this.mouseButtonPressed;
 		}
 		return Input.mouseJustPressed && !Input.mouseDisabled;

@@ -4,9 +4,9 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
-import hw4_scene from "./hw4_scene";
 import { CANVAS_SIZE } from "../constants";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
+import xeno_level from "./xeno_level";
 
 const PADDING = 100;
 const PassiveGrey = new Color(196, 196, 196);
@@ -18,6 +18,7 @@ export default class MainMenu extends Scene {
     private chapter: Layer;
     private control: Layer;
     private help: Layer; 
+
     loadScene() {
         this.load.image("background", "xeno_assets/images/background.png")
         this.load.image("leftclick", "xeno_assets/images/light/Mouse_Left_key_Light.png")
@@ -43,6 +44,13 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe('control');
         this.receiver.subscribe('help');
         this.receiver.subscribe('chapter');
+
+        this.receiver.subscribe('chapter1_1');
+        this.receiver.subscribe('chapter1_1');
+        this.receiver.subscribe('chapter2_1');
+        this.receiver.subscribe('chapter2_2');
+        this.receiver.subscribe('chapter3_1');
+        this.receiver.subscribe('chapter3_2');
 
         const mainBackground = this.add.sprite("background", "main");
         mainBackground.position.copy(center); 
@@ -197,6 +205,8 @@ export default class MainMenu extends Scene {
                 case "help":
                     this.switchScene('help')
                     break;
+                case "chapter1_1":
+                    this.sceneManager.changeToScene(xeno_level); 
             }
         }
     }
