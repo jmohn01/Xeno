@@ -5,21 +5,11 @@ export const CANVAS_SIZE = {
     y: 900
 }
 
-export enum WALL_DIRECTION_TYPE {
-    CROSSROAD,
-
-    LTRI,
-    TTRI,
-    RTRI,
-    BTRI,
-
-    LTTURN,
-    RTTURN,
-    RBTURN,
-    LBTURN,
-
-    HORIZONTAL,
-    VERTICAL
+export enum WALL_TYPE {
+    DIRT = "DIRT",
+    WOOD = "WOOD",
+    STONE = "STONE",
+    FIBER = "FIBER"
 }
 
 export enum TRAP_TYPE {

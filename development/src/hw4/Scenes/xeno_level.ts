@@ -4,6 +4,7 @@ import Input from "../../Wolfie2D/Input/Input";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
+import WallAI, { NEIGHBOR } from "../AI/wallAI";
 import { TRAP_TYPE, XENO_EVENTS } from "../constants";
 
 export default class xeno_level extends Scene {
@@ -44,7 +45,6 @@ export default class xeno_level extends Scene {
 
         this.viewport.setZoomLevel(1);
 
-        console.log(this.viewport.getCenter());
     }
 
     updateScene(deltaT: number): void {
@@ -89,7 +89,7 @@ export default class xeno_level extends Scene {
     }
 
     placeWall(position: Vec2) {
-        let wall = null;
+        let wall: AnimatedSprite = null;
         for (let w of this.walls) {
             if (!w.visible) {
                 wall = w;
@@ -99,71 +99,62 @@ export default class xeno_level extends Scene {
 
         if (!wall) {
             wall = this.add.animatedSprite('walls', 'primary');
+            wall.ai = new WallAI();
             wall.setCollisionShape(new AABB(Vec2.ZERO, wall.sizeWithZoom));
         }
 
-        let leftTile = null, rightTile = null, topTile = null, botTile = null;
-        const leftTileColRow = this.floor.getColRowAt(position.add(new Vec2(-32, 0)));
-        const rightTileColRow = this.floor.getColRowAt(position.add(new Vec2(32, 0)));
-        const botTileColRow = this.floor.getColRowAt(position.add(new Vec2(0, 32)));
-        const topTileColRow = this.floor.getColRowAt(position.add(new Vec2(0, -32)));
+        let leftTile: AnimatedSprite = null, rightTile: AnimatedSprite = null, topTile: AnimatedSprite = null, botTile: AnimatedSprite = null;
+        position.add(new Vec2(16, 16));
+        const currColRow = this.floor.getColRowAt(position);
+        const leftTileColRow = currColRow.clone().add(new Vec2(-1, 0));
+        const rightTileColRow = currColRow.clone().add(new Vec2(1, 0));
+        const botTileColRow = currColRow.clone().add(new Vec2(0, 1));
+        const topTileColRow = currColRow.clone().add(new Vec2(0, -1));
+
+        console.log(`Curr: ${currColRow}`);
+        console.log(`Left: ${leftTileColRow}`);
+        console.log(`Right: ${rightTileColRow}`);
+        console.log(`Bot: ${botTileColRow}`);
+        console.log(`Top: ${topTileColRow}`);
 
         this.aliveWalls.forEach((w) => {
-            if (this.floor.getColRowAt(w.position).equals(leftTileColRow))
+            if (this.floor.getColRowAt(w.position).equals(leftTileColRow)) {
                 leftTile = w;
-            if (this.floor.getColRowAt(w.position).equals(rightTileColRow))
+                (leftTile.ai as WallAI).addNeighbor(wall, NEIGHBOR.RIGHT);
+                console.log(`LEFT TILE FOUND: ${leftTile}`);
+            }
+            if (this.floor.getColRowAt(w.position).equals(rightTileColRow)) {
                 rightTile = w;
-            if (this.floor.getColRowAt(w.position).equals(botTileColRow))
+                (rightTile.ai as WallAI).addNeighbor(wall, NEIGHBOR.LEFT);
+                console.log(`RIGHT TILE FOUND: ${rightTile}`);
+            }
+            if (this.floor.getColRowAt(w.position).equals(botTileColRow)) {
                 botTile = w;
-            if (this.floor.getColRowAt(w.position).equals(topTileColRow))
+                (botTile.ai as WallAI).addNeighbor(wall, NEIGHBOR.TOP);
+                console.log(`BOT TILE FOUND: ${botTile}`);
+            }
+            if (this.floor.getColRowAt(w.position).equals(topTileColRow)) {
                 topTile = w;
+                (topTile.ai as WallAI).addNeighbor(wall, NEIGHBOR.BOT);
+                console.log(`TOP TILE FOUND: ${topTile}`);
+            }
         })
 
-        const shape = this.getWallShape(leftTile, rightTile, botTile, topTile);
-        wall.animation.playIfNotAlready(`DIRT_${shape}`, true);
-        wall.position = this.floor.getColRowAt(position.add(new Vec2(16, 16))).mult(new Vec2(32, 32));
-        console.log(wall.position);
+        wall.ai.initializeAI(wall, {
+            leftTile: leftTile,
+            rightTile: rightTile,
+            botTile: botTile,
+            topTile: topTile
+        })
+
+
+        wall.position = currColRow.clone().mult(new Vec2(32, 32));
 
         wall.visible = true;
         this.aliveWalls.push(wall);
     }
 
-    getWallShape(left: AnimatedSprite, right: AnimatedSprite, bot: AnimatedSprite, top: AnimatedSprite): string {
-        if (left && right && bot && top)
-            return 'CROSSROAD';
 
-        if (left && right && bot && !top)
-            return 'BTRI'
-
-        if (left && right && !bot && top)
-            return 'TTRI'
-
-        if (left && !right && bot && top)
-            return 'LTRI'
-
-        if (!left && right && bot && top)
-            return 'RTRI'
-
-        if (left && right && !bot && !top)
-            return 'HORIZONTAL'
-
-        if (!left && !right && bot && top)
-            return 'VERTICAL'
-
-        if (left && !right && bot && !top)
-            return 'LBTURN'
-
-        if (!left && right && bot && !top)
-            return 'RBTURN'
-
-        if (!left &&!right && !bot && top)
-            return 'RTTURN'
-
-        if (left && right && !bot && top)
-            return 'LTTURN'
-
-        return 'HORIZONTAL'
-    }
 
 
 
