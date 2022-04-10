@@ -26,7 +26,15 @@ export default class WallAI implements BattlerAI, Upgradeable {
     emitter: Emitter = new Emitter();
 
 
-    damage: (damage: number) => {
+    damage(damage: number): void {
+        this.health -= damage; 
+
+        if (this.health <= 0) {
+            this.owner.setAIActive(false, {});
+            this.owner.isCollidable = false;
+            this.owner.visible = false;
+            this.emitter.fireEvent("wallDied", {wall: this.owner}); 
+        }
 
     }
 

@@ -4,24 +4,30 @@ import Input from "../../Wolfie2D/Input/Input";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
+import TimerManager from "../../Wolfie2D/Timing/TimerManager";
 import WallAI, { NEIGHBOR } from "../AI/wallAI";
 import { TRAP_TYPE, XENO_EVENTS } from "../constants";
+
 
 export default class xeno_level extends Scene {
 
     private floor: OrthogonalTilemap;
 
-    private walls: Array<AnimatedSprite> = new Array();
+    private deadWalls: Array<AnimatedSprite> = new Array();
 
-    private traps: Array<AnimatedSprite> = new Array();
+    private deadTraps: Array<AnimatedSprite> = new Array();
 
-    private turrets: Array<AnimatedSprite> = new Array();
+    private deadTurrets: Array<AnimatedSprite> = new Array();
 
     private aliveWalls: Array<AnimatedSprite> = new Array();
 
     private aliveTraps: Array<AnimatedSprite> = new Array();
 
     private aliveTurrets: Array<AnimatedSprite> = new Array();
+    
+    private timerManager: TimerManager = TimerManager.getInstance(); 
+
+    
 
     loadScene(): void {
 
@@ -53,7 +59,7 @@ export default class xeno_level extends Scene {
         }
 
         if (Input.isMouseJustPressed(0)) {
-            this.placeWall(Input.getGlobalMousePressPosition());
+            this.placeWall(Input.getGlobalMousePressPosition().clone().add(new Vec2(16, 16)));
         }
     }
 
@@ -66,16 +72,7 @@ export default class xeno_level extends Scene {
 
 
     placeTrap(position: Vec2, type: TRAP_TYPE) {
-        console.log(this.floor.getTileSize());
-        console.log(this.floor.getColRowAt(position));
-
-        let trap = null;
-        for (let t of this.traps) {
-            if (!t.visible) {
-                trap = t;
-                break;
-            }
-        }
+        let trap: AnimatedSprite = this.deadTraps.pop(); 
 
         if (!trap) {
             trap = this.add.animatedSprite('traps', 'primary');
@@ -89,13 +86,7 @@ export default class xeno_level extends Scene {
     }
 
     placeWall(position: Vec2) {
-        let wall: AnimatedSprite = null;
-        for (let w of this.walls) {
-            if (!w.visible) {
-                wall = w;
-                break;
-            }
-        }
+        let wall: AnimatedSprite = this.deadWalls.pop();
 
         if (!wall) {
             wall = this.add.animatedSprite('walls', 'primary');
