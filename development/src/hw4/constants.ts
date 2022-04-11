@@ -28,7 +28,7 @@ export enum XENO_EVENTS {
     UPGRADE = "UPGRADE"
 }
 
-export enum XENO_EFFECTS {
+export enum XENO_EFFECT_TYPE {
     FIRE_EFFECT = "FIRE_EFFECT",
     SLOW_EFFECT = "SLOW_EFFECT",
     ACID_EFFECT = "ACID_EFFECT"

@@ -4,7 +4,7 @@ import BattlerAI from "../../AI/BattlerAI";
 import { XENO_ATKER_TYPE } from "../../constants";
 import AtkAnimation from "../AttackAnimation/AtkAnimation";
 import BattleManager from "../BattleManager";
-import { effectsData } from "./internal";
+import { EffectData } from "./internal";
 
 export default class AOEAttack {
 
@@ -16,13 +16,13 @@ export default class AOEAttack {
 
     r: number;
 
-    effects: effectsData; 
+    effects: EffectData; 
 
     private cooldownTimer: Timer;
 
     private atkAnimation: AtkAnimation;
 
-    constructor(damage: number, r: number, cooldown: number, atkAnimation: AtkAnimation, effects: effectsData) {
+    constructor(damage: number, r: number, cooldown: number, atkAnimation: AtkAnimation, effects: EffectData) {
         this.damage = damage;
         this.r = r;
         this.cooldownTimer = new Timer(cooldown);

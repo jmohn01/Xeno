@@ -1,4 +1,4 @@
-export type effectsData = {
+export type EffectData = {
     fire?: { 
         duration: number, 
         damage: number,

@@ -4,20 +4,27 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import { EffectData } from "../GameSystems/Attack/internal";
+import { Effect } from "../GameSystems/Effect/Effect";
 import Weapon from "../GameSystems/items/Weapon";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
+
+    armor: number;
+    
     speed: number;
-
+    
     owner: AnimatedSprite;
-
+    
     health: number;
-
+    
     target: AnimatedSprite = null;
+    
+    effects: Effect<any>[];
 
-    weapon: Weapon;
+    atkEffect: EffectData;
 
     emitter: Emitter = new Emitter();
 
@@ -27,14 +34,13 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("turretDied", {wall: this.owner}); 
+            this.emitter.fireEvent("turretDied", { wall: this.owner });
         }
     }
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
-        this.owner = owner; 
+        this.owner = owner;
         this.health = 20;
-        this.weapon = options.weapon; 
         this.owner.animation.playIfNotAlready('IDLE', true);
     }
 
@@ -47,19 +53,30 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     handleEvent(event: GameEvent): void {
-        
+
     }
 
     update(deltaT: number): void {
         if (this.target != null) {
             const lookDir = this.owner.position.dirTo(this.target.position);
             this.owner.rotation = Vec2.UP.angleToCCW(lookDir);
-            this.weapon.use(this.owner, )
+
         }
     }
-    
+
     upgrade(): void {
         throw new Error("Method not implemented.");
+    }
+
+    addEffect(effect: Effect<any>): void {
+        for (let i = 0; i < this.effects.length; i++) {
+            if (this.effects[i].type === effect.type && this.effects[i].equal(effect)) {
+                this.effects[i].refreshEffect();
+                return;
+            }
+        }
+        this.effects.push(effect);
+        effect.applyEffect(); 
     }
 
 }

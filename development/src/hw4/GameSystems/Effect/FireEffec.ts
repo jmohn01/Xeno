@@ -1,8 +1,9 @@
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
+import { XENO_EFFECT_TYPE } from "../../constants";
 import { Effect } from "./Effect";
 
-export class FireEffect extends Effect {
+export class FireEffect extends Effect<FireEffect> {
 
     duration: number;
 
@@ -13,6 +14,8 @@ export class FireEffect extends Effect {
     private dotTimer: Timer; 
 
     private durationTimer: Timer; 
+
+    type: XENO_EFFECT_TYPE = XENO_EFFECT_TYPE.FIRE_EFFECT; 
 
     constructor(duration: number, ticks: number, target: BattlerAI) {
         super(); 
@@ -35,5 +38,13 @@ export class FireEffect extends Effect {
         this.durationTimer.pause(); 
         delete this.dotTimer;
         delete this.durationTimer; 
+    }
+
+    refreshEffect(): void {
+        this.durationTimer.reset();
+    }
+
+    equal(e: FireEffect): boolean {
+        return e.duration === this.duration && e.damage === this.damage && e.ticks === this.ticks;
     }
 }

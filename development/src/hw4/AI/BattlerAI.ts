@@ -1,6 +1,7 @@
 import AI from "../../Wolfie2D/DataTypes/Interfaces/AI";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
+import { EffectData } from "../GameSystems/Attack/internal";
 import { Effect } from "../GameSystems/Effect/Effect";
 
 export default interface BattlerAI extends AI {
@@ -12,9 +13,11 @@ export default interface BattlerAI extends AI {
 
     armor: number;
 
-    effectArray: Array<Effect>
+    effects: Array<Effect<any>>
 
-    damage: (damage: number) => void;
+    atkEffect: EffectData
 
-    addEffect: (effect: Effect) => void;
+    damage(damage: number): void;
+
+    addEffect(effect: Effect<any>): void;
 }

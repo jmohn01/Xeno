@@ -1,16 +1,23 @@
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
+import { XENO_EFFECT_TYPE } from "../../constants";
 
-export abstract class Effect {
+export abstract class Effect<T> {
 
     duration: number; 
     
     target: BattlerAI; 
 
+    type: XENO_EFFECT_TYPE;
+
     abstract applyEffect(): void;
 
     abstract endEffect(): void;
+
+    abstract refreshEffect(): void; 
+
+    abstract equal(e: T): boolean;
 }
 
 

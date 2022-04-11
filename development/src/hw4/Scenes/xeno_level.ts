@@ -79,10 +79,6 @@ export default class xeno_level extends Scene {
             let event = this.receiver.getNextEvent();
         }
 
-<<<<<<< HEAD
-        if (Input.isMouseJustPressed(0)) {
-            this.placeWall(Input.getGlobalMousePressPosition().clone());
-=======
         if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x<1388) {
             this.placeWall(Input.getGlobalMousePressPosition().clone());
         }
@@ -129,7 +125,6 @@ export default class xeno_level extends Scene {
                     console.log("2,6 Speed Up");
                 }
             }
->>>>>>> 3ff4a88c10b1de5cb7b7adc5e588584dab05557a
         }
     }
 
