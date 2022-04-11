@@ -21,13 +21,18 @@ import Patrol from "./EnemyStates/Patrol";
 import { EffectData } from "../GameSystems/Attack/internal";
 import { Effect } from "../GameSystems/Effect/Effect";
 import AttackAction from "./EnemyActions/AttackAction";
+import AOEAttack from "../GameSystems/Attack/AOEAttack";
+import PointAttack from "../GameSystems/Attack/PointAttack";
 
 
 export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
+    atk: PointAttack;
     armor: number;
     effects: Effect<any>[];
     atkEffect: EffectData;
     routeIndex: number;
+    floor: OrthogonalTilemap;
+    aliveTurrets: Array<AnimatedSprite>;
     addEffect(effect: Effect<any>): void {
         throw new Error("Method not implemented.");
     }
@@ -74,6 +79,7 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
 
         this.aliveWalls = options.aliveWalls;
 
+        this.floor = options.floor;
         // Initialize to the default state
         this.initialize(EnemyStates.DEFAULT);
     }
@@ -106,29 +112,45 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
     }
 
     getNextPath(): NavigationPath {
-        let path = this.owner.getScene().getNavigationManager().getPath(hw4_Names.NAVMESH, this.owner.position, this.Path[this.routeIndex]);
-        this.routeIndex = (this.routeIndex + 1)%this.Path.length;
+        let path = this.owner.getScene().getNavigationManager().getPath(hw4_Names.NAVMESH, this.owner.position, this.Path[this.routeIndex], true);
+        this.routeIndex = this.routeIndex + 1;
         return path;
     }
 
     attackifpathblocked(): boolean{
         const rotation =Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
+        const tilePosition = this.floor.getColRowAt(this.owner.position);
         if(rotation<0.7 || rotation>5.6){
-
+            tilePosition.add(new Vec2(0, -1));
         }
         else if(rotation>0.9 || rotation<2.3){
-
+            tilePosition.add(new Vec2(-1, 0));
         }
         else if(rotation>2.4 || rotation<3.8){
-
+            tilePosition.add(new Vec2(1, 0));
         }
         else if(rotation>4 || rotation<5.4){
-
+            tilePosition.add(new Vec2(0, 1));
         }
         else{
             console.log("Moving in impossible ways");
             return false;
         }
+        if(this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))){
+            this.atk.attack(this, this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
+        }
+        else if(this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))){
+            this.atk.attack(this, this.aliveWalls.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
+        }
+        else{
+            return false;
+        }
+    }
+    findpath(){
+        const turnpoint= new Vec2(this.owner.position.x,this.BasePos.y);
+        this.Path.push(turnpoint.clone());
+        this.Path.push(this.BasePos.clone())
+        return;
     }
 
     update(deltaT: number){
