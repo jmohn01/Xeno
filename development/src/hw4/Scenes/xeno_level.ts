@@ -38,8 +38,8 @@ export default class xeno_level extends Scene {
 
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-        this.load.spritesheet("UNA","xeno_assets/spritesheets/UMA.json")
-        this.load.image("Drawing", "xeno_assets/images/Drawing.png")
+        this.load.spritesheet("UNA","xeno_assets/spritesheets/UMA.json");
+        this.load.image("Drawing", "xeno_assets/images/Drawing.png");
     }
 
     startScene(): void {
