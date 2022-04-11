@@ -3,6 +3,9 @@ import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Input from "../../Wolfie2D/Input/Input";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
+import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import TimerManager from "../../Wolfie2D/Timing/TimerManager";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
@@ -27,7 +30,7 @@ export default class xeno_level extends Scene {
     
     private timerManager: TimerManager = TimerManager.getInstance(); 
 
-    
+    private UI: Layer; 
 
     loadScene(): void {
 
@@ -35,14 +38,32 @@ export default class xeno_level extends Scene {
 
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-
+        this.load.spritesheet("UNA","xeno_assets/spritesheets/UMA.json")
+        this.load.image("Drawing", "xeno_assets/images/Drawing.png")
     }
 
     startScene(): void {
+        const Slot1 =  new Vec2(1455, 210);
+        const Slot2 =  new Vec2(1555, 210);
+        const Slot3 =  new Vec2(1455, 340);
+        const Slot4 = new Vec2(1555, 340);
+        const Slot5 = new Vec2(1455, 460);
+        const Slot6 =  new Vec2(1555, 460);
+        const Slot7 =  new Vec2(1455, 590);
+        const Slot8 =  new Vec2(1555, 590);
+        const Slot9 =  new Vec2(1455, 710);
+        const Slot10 =  new Vec2(1555, 710);
+        const SlotMoney =  new Vec2(1500, 40);
+        const SlotStatus =  new Vec2(1460, 120);
+        const center = this.viewport.getCenter();
+
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
-
-
-
+        
+        this.UI = this.addUILayer("UI");
+        const Drawing = this.add.sprite("Drawing", "UI");
+        Drawing.position.copy(center); 
+        const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: SlotMoney, text: "00000"});
+        const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: SlotStatus, text: "Status"});
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
@@ -58,8 +79,57 @@ export default class xeno_level extends Scene {
             let event = this.receiver.getNextEvent();
         }
 
+<<<<<<< HEAD
         if (Input.isMouseJustPressed(0)) {
             this.placeWall(Input.getGlobalMousePressPosition().clone());
+=======
+        if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x<1388) {
+            this.placeWall(Input.getGlobalMousePressPosition().clone());
+        }
+        else if(Input.isMouseJustPressed(0)){
+            const clickPos = Input.getGlobalMousePressPosition().clone()
+            console.log(clickPos);
+            if(clickPos.x<1500 && clickPos.x>1410){
+                if (clickPos.y<270 && clickPos.y>170) {
+                    console.log("1,1 SLOT1");
+                }
+                else if(clickPos.y<400 && clickPos.y>300){
+                    console.log("1,2 SLOT3");
+                }
+                else if(clickPos.y<520 && clickPos.y>420){
+                    console.log("1,3 SLOT5");
+                }
+                else if(clickPos.y<650 && clickPos.y>540){
+                    console.log("1,4 SLOT7");
+                }
+                else if(clickPos.y<780 && clickPos.y>680){
+                    console.log("1,5 SLOT9");
+                }
+                else if(clickPos.y<880 && clickPos.y>820){
+                    console.log("1,6 Pause");
+                }
+            }
+            else if(clickPos.x<1600 && clickPos.x>1510){
+                if (clickPos.y<270 && clickPos.y>170) {
+                    console.log("2,1 SLOT2");
+                }
+                else if(clickPos.y<400 && clickPos.y>300){
+                    console.log("2,2 SLOT4");
+                }
+                else if(clickPos.y<520 && clickPos.y>420){
+                    console.log("2,3 SLOT6");
+                }
+                else if(clickPos.y<650 && clickPos.y>540){
+                    console.log("2,4 SLOT8");
+                }
+                else if(clickPos.y<780 && clickPos.y>680){
+                    console.log("2,5 SLOT10");
+                }
+                else if(clickPos.y<880 && clickPos.y>820){
+                    console.log("2,6 Speed Up");
+                }
+            }
+>>>>>>> 3ff4a88c10b1de5cb7b7adc5e588584dab05557a
         }
     }
 
