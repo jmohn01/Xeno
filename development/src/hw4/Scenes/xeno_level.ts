@@ -8,11 +8,17 @@ import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import TimerManager from "../../Wolfie2D/Timing/TimerManager";
+import MathUtils from "../../Wolfie2D/Utils/MathUtils";
+import BattlerAI from "../AI/BattlerAI";
+import EnemyAI from "../AI/EnemyAI";
+import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
 import { TRAP_TYPE, XENO_EVENTS } from "../constants";
 
 
 export default class xeno_level extends Scene {
+
+    private placingMode: "WALL" | "TURRET" | "TRAP" | "ENEMY" = "WALL"; 
 
     private floor: OrthogonalTilemap;
 
@@ -27,6 +33,8 @@ export default class xeno_level extends Scene {
     private aliveTraps: Array<AnimatedSprite> = new Array();
 
     private aliveTurrets: Array<AnimatedSprite> = new Array();
+
+    private aliveEnemies: Array<AnimatedSprite> = new Array();
     
     private timerManager: TimerManager = TimerManager.getInstance(); 
 
@@ -38,8 +46,9 @@ export default class xeno_level extends Scene {
 
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-        this.load.spritesheet("UNA","xeno_assets/spritesheets/UMA.json");
-        this.load.image("Drawing", "xeno_assets/images/Drawing.png");
+        this.load.spritesheet("turret", "xeno_assets/spritesheets/Turret_simple.json");
+        this.load.spritesheet("UMA","xeno_assets/spritesheets/UMA.json")
+        this.load.image("Drawing", "xeno_assets/images/Drawing.png")
     }
 
     startScene(): void {
@@ -79,8 +88,35 @@ export default class xeno_level extends Scene {
             let event = this.receiver.getNextEvent();
         }
 
+        if (Input.isKeyJustPressed('1')) {
+            this.placingMode = 'WALL';
+        }
+
+        if (Input.isKeyJustPressed('2')) {
+            this.placingMode = 'TURRET';
+        }
+
+        if (Input.isKeyJustPressed('3')) {
+            this.placingMode = 'TRAP';
+        }
+
+        if (Input.isKeyJustPressed('4')) {
+            this.placingMode = 'ENEMY'; 
+        }
+
         if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x<1388) {
-            this.placeWall(Input.getGlobalMousePressPosition().clone());
+            switch (this.placingMode) {
+                case "WALL":
+                    this.placeWall(Input.getGlobalMousePressPosition().clone());
+                    break;
+                case "TRAP":
+                    break; 
+                case "TURRET":
+                    this.placeTurret(Input.getGlobalMousePosition().clone());
+                    break;
+                case "ENEMY":
+                    this.placeEnemey(Input.getGlobalMousePosition().clone());
+            }
         }
         else if(Input.isMouseJustPressed(0)){
             const clickPos = Input.getGlobalMousePressPosition().clone()
@@ -167,12 +203,6 @@ export default class xeno_level extends Scene {
         const botTileColRow = currColRow.clone().add(new Vec2(0, 1));
         const topTileColRow = currColRow.clone().add(new Vec2(0, -1));
 
-        console.log(`Curr: ${currColRow}`);
-        console.log(`Left: ${leftTileColRow}`);
-        console.log(`Right: ${rightTileColRow}`);
-        console.log(`Bot: ${botTileColRow}`);
-        console.log(`Top: ${topTileColRow}`);
-
         this.aliveWalls.forEach((w) => {
             if (this.floor.getColRowAt(w.position).equals(leftTileColRow)) {
                 leftTile = w;
@@ -208,6 +238,39 @@ export default class xeno_level extends Scene {
 
         wall.visible = true;
         this.aliveWalls.push(wall);
+    }
+
+    placeTurret(position: Vec2) {
+        let turret = this.deadTurrets.pop(); 
+        const currColRow = this.floor.getColRowAt(position.add(new Vec2(16, 16)));
+
+        if (!turret) {
+            turret = this.add.animatedSprite("turret", "primary");
+            turret.addAI(TurretAI);
+        }
+
+        turret.position = currColRow.clone().mult(new Vec2(32, 32));
+        turret.visible = true;
+        this.aliveTurrets.push(turret);
+    }
+
+    placeEnemey(position: Vec2) {
+        const currColRow = this.floor.getColRowAt(position.add(new Vec2(16, 16)));
+        let enemy = this.add.animatedSprite("UMA", "primary");
+        enemy.addAI(TurretAI);
+        enemy.position = currColRow.clone().mult(new Vec2(32, 32));
+        enemy.visible = true;
+        this.aliveEnemies.push(enemy);
+    }
+
+    findEnemyInRange(from: Vec2, range: number): BattlerAI | undefined {
+        if (!this.aliveEnemies.length) return undefined;
+        
+        for (let i = 0; i < this.aliveEnemies.length; i++) {
+            if (from.distanceTo(this.aliveEnemies[i].position) < range) {
+                return (this.aliveEnemies[i].ai as BattlerAI);
+            }
+        }
     }
 
 

@@ -4,15 +4,22 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Color from "../../Wolfie2D/Utils/Color";
+import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
+import PointAttack from "../GameSystems/Attack/PointAttack";
+import { BulletAnimation } from "../GameSystems/AttackAnimation/BulletAnimation";
 import { Effect } from "../GameSystems/Effect/Effect";
 import Weapon from "../GameSystems/items/Weapon";
+import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
 
     armor: number;
+
+    range: number = 300; 
     
     speed: number;
     
@@ -20,13 +27,15 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     
     health: number;
     
-    target: AnimatedSprite = null;
+    target: BattlerAI; 
     
     effects: Effect<any>[];
 
     atkEffect: EffectData;
 
     emitter: Emitter = new Emitter();
+
+    atk: PointAttack = new PointAttack(1, 1000, new BulletAnimation(Color.WHITE), {}); 
 
     damage(damage: number) {
         this.health -= damage;
@@ -57,10 +66,13 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     update(deltaT: number): void {
-        if (this.target != null) {
-            const lookDir = this.owner.position.dirTo(this.target.position);
+        if (!this.target) {
+            this.target = (this.owner.getScene() as xeno_level).findEnemyInRange(this.owner.position, this.range);
+        }
+        if (this.target) {
+            const lookDir = this.owner.position.dirTo(this.target.owner.position);
+            this.atk.attack(this, this.target); 
             this.owner.rotation = Vec2.UP.angleToCCW(lookDir);
-
         }
     }
 
