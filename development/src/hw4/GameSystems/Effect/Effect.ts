@@ -11,7 +11,6 @@ export abstract class Effect {
     abstract applyEffect(): void;
 
     abstract endEffect(): void;
-
 }
 
 

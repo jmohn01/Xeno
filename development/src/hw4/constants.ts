@@ -34,3 +34,8 @@ export enum XENO_EFFECTS {
     ACID_EFFECT = "ACID_EFFECT"
 }
 
+export enum XENO_ATKER_TYPE {
+    FRIEND = "FRINED",
+    ENEMY = "ENEMY"
+}
+

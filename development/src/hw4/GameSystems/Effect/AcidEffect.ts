@@ -3,7 +3,7 @@ import BattlerAI from "../../AI/BattlerAI";
 import { Effect } from "./Effect";
 
 export class AcidEffect extends Effect {
-
+    
     duration: number;
 
     reduction: number; 
@@ -26,4 +26,5 @@ export class AcidEffect extends Effect {
         this.target.armor += this.reduction;
         delete this.durationTimer; 
     }
+    
 }
