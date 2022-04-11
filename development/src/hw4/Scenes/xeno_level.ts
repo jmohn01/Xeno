@@ -5,7 +5,7 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import TimerManager from "../../Wolfie2D/Timing/TimerManager";
-import WallAI, { NEIGHBOR } from "../AI/wallAI";
+import WallAI, { NEIGHBOR } from "../AI/WallAI";
 import { TRAP_TYPE, XENO_EVENTS } from "../constants";
 
 
@@ -59,7 +59,7 @@ export default class xeno_level extends Scene {
         }
 
         if (Input.isMouseJustPressed(0)) {
-            this.placeWall(Input.getGlobalMousePressPosition().clone().add(new Vec2(16, 16)));
+            this.placeWall(Input.getGlobalMousePressPosition().clone());
         }
     }
 

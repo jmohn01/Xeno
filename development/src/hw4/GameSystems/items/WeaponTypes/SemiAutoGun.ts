@@ -7,6 +7,7 @@ import OrthogonalTilemap from "../../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTil
 import Scene from "../../../../Wolfie2D/Scene/Scene";
 import Color from "../../../../Wolfie2D/Utils/Color";
 import { EaseFunctionType } from "../../../../Wolfie2D/Utils/EaseFunctions";
+import { XENO_EVENTS } from "../../../constants";
 import { hw4_Events } from "../../../hw4_constants";
 import WeaponType from "./WeaponType";
 
@@ -84,7 +85,7 @@ export default class SemiAutoGun extends WeaponType {
                     ease: EaseFunctionType.OUT_SINE
                 }
             ],
-            onEnd: hw4_Events.UNLOAD_ASSET
+            onEnd: XENO_EVENTS.UNLOAD_ASSET
         });
 
         return [line];

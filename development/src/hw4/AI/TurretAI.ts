@@ -4,16 +4,20 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Weapon from "../GameSystems/items/Weapon";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
+    speed: number;
 
     owner: AnimatedSprite;
 
     health: number;
 
     target: AnimatedSprite = null;
+
+    weapon: Weapon;
 
     emitter: Emitter = new Emitter();
 
@@ -30,24 +34,30 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner; 
         this.health = 20;
+        this.weapon = options.weapon; 
         this.owner.animation.playIfNotAlready('IDLE', true);
     }
 
     destroy(): void {
         throw new Error("Method not implemented.");
     }
+
     activate(options: Record<string, any>): void {
         throw new Error("Method not implemented.");
     }
+
     handleEvent(event: GameEvent): void {
         
     }
+
     update(deltaT: number): void {
         if (this.target != null) {
             const lookDir = this.owner.position.dirTo(this.target.position);
             this.owner.rotation = Vec2.UP.angleToCCW(lookDir);
+            this.weapon.use(this.owner, )
         }
     }
+    
     upgrade(): void {
         throw new Error("Method not implemented.");
     }

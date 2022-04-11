@@ -41,7 +41,6 @@ export default class PlayerController implements BattlerAI {
         while(this.receiver.hasNextEvent()){
             this.handleEvent(this.receiver.getNextEvent());
         }
-        const pressed = Input.isMouseJustPressed(0);
         
     }
 
