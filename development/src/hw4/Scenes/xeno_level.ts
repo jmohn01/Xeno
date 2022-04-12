@@ -52,13 +52,13 @@ export default class xeno_level extends Scene {
     loadScene(): void {
 
         this.load.tilemap("level", "xeno_assets/map/test_map.json");
-        this.load.spritesheet("base","xeno_assets/spritesheets/Generator.json");
+        this.load.spritesheet("base","xeno_assets/spritesheets/generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-        this.load.spritesheet("turret", "xeno_assets/spritesheets/Turret_simple.json");
-        this.load.spritesheet("UMA", "xeno_assets/spritesheets/UMA.json")
+        this.load.spritesheet("turret", "xeno_assets/spritesheets/turret_simple.json");
+        this.load.spritesheet("UMA", "xeno_assets/spritesheets/uma.json")
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json")
-        this.load.image("Drawing", "xeno_assets/images/Drawing.png")
+        this.load.image("Drawing", "xeno_assets/images/drawing.png")
     }
 
     startScene(): void {
@@ -119,23 +119,23 @@ export default class xeno_level extends Scene {
                 console.log("ERROR");
                 this.errorLabel.text = event.data.get('message');
                 break;
-            case 'turretDied':
+            case XENO_EVENTS.TURRET_DIED:
                 const deadTurret = event.data.get('owner');
                 this.aliveTurrets = this.aliveTurrets.filter((e) => e.id != deadTurret.id);
                 this.deadTurrets.push(deadTurret); 
                 break;
-            case 'wallDied':
+            case XENO_EVENTS.WALL_DIED:
                 const deadWall = event.data.get('owner');
                 this.updateNeighbors(deadWall);
                 this.aliveWalls = this.aliveWalls.filter((e) => e.id != deadWall.id);
                 this.deadWalls.push(deadWall); 
                 break;
-            case 'enemyDied':
+            case XENO_EVENTS.ENEMY_DIED:
                 const deadEnemy = event.data.get('owner');
                 this.aliveEnemies = this.aliveEnemies.filter((e) => e.id != deadEnemy.id);
                 this.deadEnemies.push(deadEnemy); 
                 break;
-            case 'gameOver':
+            case XENO_EVENTS.GAME_OVER:
         }
     }
 

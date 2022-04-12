@@ -80,13 +80,18 @@ export default class TurretAI implements BattlerAI, Upgradeable {
 
     addEffect(effect: Effect<any>): void {
         for (let i = 0; i < this.effects.length; i++) {
-            if (this.effects[i].type === effect.type && this.effects[i].equal(effect)) {
-                this.effects[i].refreshEffect();
+            const curr = this.effects[i];
+            if (curr.type === effect.type && curr.isActive() && curr.equal(effect)) {
+                curr.refreshEffect();
                 return;
             }
         }
         this.effects.push(effect);
         effect.applyEffect();
+    }
+
+    removeEffect(id: number): void {
+        this.effects = this.effects.filter((e) => e.id !== id);
     }
 
 }

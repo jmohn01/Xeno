@@ -1,6 +1,6 @@
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
-import { XENO_EFFECT_TYPE } from "../../constants";
+import { XENO_EFFECT_TYPE, XENO_EVENTS } from "../../constants";
 import { Effect } from "./Effect";
 
 export class AcidEffect extends Effect<AcidEffect> {
@@ -28,11 +28,15 @@ export class AcidEffect extends Effect<AcidEffect> {
 
     endEffect(): void {
         this.target.armor += this.reduction;
-        delete this.durationTimer; 
+        this.emitter.fireEvent(XENO_EVENTS.EFFECT_END, {id: this.id, owner: this.target})
     }
 
     refreshEffect(): void {
         this.durationTimer.reset();
+    }
+
+    isActive(): boolean {
+        return !this.durationTimer.isStopped()
     }
 
     equal(e: AcidEffect): boolean {

@@ -1,7 +1,7 @@
 import Vec2 from "../Wolfie2D/DataTypes/Vec2";
 
 export const CANVAS_SIZE = {
-    x: 1600, 
+    x: 1600,
     y: 900
 }
 
@@ -20,11 +20,13 @@ export enum TRAP_TYPE {
 }
 
 export enum XENO_EVENTS {
-    ERROR = "ERROR", 
-    UNLOAD_ASSET = "UNLOAD_ASSET", 
-    PLACE_TRAP = "PLACE_TRAP",
-    PLACE_WALL = "PLACE_WALL",
-    PLACE_TURRET = "PLACE_TURRET",
+    ERROR = "ERROR",
+    UNLOAD_ASSET = "UNLOAD_ASSET",
+    WALL_DIED = "WALL_DIED",
+    ENEMY_DIED = "ENEMY_DIED",
+    TURRET_DIED = "TURRET_DIED",
+    GAME_OVER = "GAME_OVER",
+    EFFECT_END = "EFFECT_END",
     UPGRADE = "UPGRADE"
 }
 

@@ -1,6 +1,6 @@
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
-import { XENO_EFFECT_TYPE } from "../../constants";
+import { XENO_EFFECT_TYPE, XENO_EVENTS } from "../../constants";
 import { Effect } from "./Effect";
 
 
@@ -31,11 +31,15 @@ export class SlowEffect extends Effect<SlowEffect> {
     endEffect(): void {
         this.target.speed /= this.percent;
         this.durationTimer.pause(); 
-        delete this.durationTimer; 
+        this.emitter.fireEvent(XENO_EVENTS.EFFECT_END, {id: this.id, owner: this.target});
     }
 
     refreshEffect(): void {
         this.durationTimer.reset();
+    }
+
+    isActive(): boolean {
+        return !this.durationTimer.isStopped();
     }
 
     equal(e: SlowEffect): boolean {

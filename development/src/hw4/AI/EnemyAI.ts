@@ -1,29 +1,22 @@
-import GoapActionPlanner from "../../Wolfie2D/AI/GoapActionPlanner";
-import StateMachineAI from "../../Wolfie2D/AI/StateMachineAI";
-import StateMachineGoapAI from "../../Wolfie2D/AI/StateMachineGoapAI";
-import GoapAction from "../../Wolfie2D/DataTypes/Interfaces/GoapAction";
-import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import Stack from "../../Wolfie2D/DataTypes/Stack";
-import State from "../../Wolfie2D/DataTypes/State/State";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
-import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
-import { hw4_Events, hw4_Names, hw4_Statuses } from "../hw4_constants";
+import Color from "../../Wolfie2D/Utils/Color";
+import { EffectData } from "../GameSystems/Attack/internal";
+import PointAttack from "../GameSystems/Attack/PointAttack";
+import { SliceAnimation } from "../GameSystems/AttackAnimation/SliceAnimation";
+import { Effect } from "../GameSystems/Effect/Effect";
+import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 
-import { EffectData } from "../GameSystems/Attack/internal";
-import { Effect } from "../GameSystems/Effect/Effect";
-import AOEAttack from "../GameSystems/Attack/AOEAttack";
-import PointAttack from "../GameSystems/Attack/PointAttack";
-import Emitter from "../../Wolfie2D/Events/Emitter";
-import { SliceAnimation } from "../GameSystems/AttackAnimation/SliceAnimation";
-import Color from "../../Wolfie2D/Utils/Color";
 
 
 export default class EnemyAI implements BattlerAI {
+    level: xeno_level;
 
     atk: PointAttack;
 
@@ -34,10 +27,6 @@ export default class EnemyAI implements BattlerAI {
     atkEffect: EffectData;
 
     routeIndex: number = 0;
-
-    aliveTurrets: Array<AnimatedSprite>;
-
-    floor: OrthogonalTilemap;
 
     emitter: Emitter = new Emitter();
 
@@ -57,8 +46,6 @@ export default class EnemyAI implements BattlerAI {
     BasePos: Vec2;
     SpawnPos: Vec2;
 
-    aliveWalls: Array<AnimatedSprite>;
-
     // Attack range
     inRange: number;
 
@@ -77,12 +64,6 @@ export default class EnemyAI implements BattlerAI {
         this.BasePos = options.BasePos;
 
         this.SpawnPos = options.SpawnPos;
-
-        this.aliveWalls = options.aliveWalls;
-
-        this.aliveTurrets = options.aliveTurrets;
-
-        this.floor = options.floor;
 
         this.currentPath = this.getNextPath();
 
@@ -146,15 +127,7 @@ export default class EnemyAI implements BattlerAI {
             console.log("Moving in impossible ways");
             return false;
         }
-        if (this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))) {
-            this.atk.attack(this, this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
-        }
-        else if (this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))) {
-            this.atk.attack(this, this.aliveWalls.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
-        }
-        else {
-            return false;
-        }
+        
     }
 
     findPath() {
@@ -174,7 +147,19 @@ export default class EnemyAI implements BattlerAI {
     }
 
     addEffect(effect: Effect<any>): void {
-        throw new Error("Method not implemented.");
+        for (let i = 0; i < this.effects.length; i++) {
+            const curr = this.effects[i];
+            if (curr.type === effect.type && curr.isActive() && curr.equal(effect)) {
+                curr.refreshEffect();
+                return;
+            }
+        }
+        this.effects.push(effect);
+        effect.applyEffect();
+    }
+
+    removeEffect(id: number): void {
+        this.effects = this.effects.filter((e) => e.id !== id);
     }
 
     destroy(): void {

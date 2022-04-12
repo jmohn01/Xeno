@@ -5,6 +5,7 @@ import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { Effect } from "../GameSystems/Effect/Effect";
+import xeno_level from "../Scenes/xeno_level";
 
 export default interface BattlerAI extends AI {
 
@@ -22,7 +23,11 @@ export default interface BattlerAI extends AI {
 
     atk: PointAttack | AOEAttack
 
+    level: xeno_level;
+
     damage(damage: number): void;
 
     addEffect(effect: Effect<any>): void;
+
+    removeEffect(id: number): void;
 }

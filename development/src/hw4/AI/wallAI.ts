@@ -125,6 +125,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
         throw new Error("Method not implemented.");
     }
 
+    removeEffect(id: number): void {
+        this.effects = this.effects.filter((e) => e.id !== id);
+    }
+
     static getWallShape(
         left: AnimatedSprite,
         right: AnimatedSprite,
