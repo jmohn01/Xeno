@@ -7,6 +7,7 @@ import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { Effect } from "../GameSystems/Effect/Effect";
+import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
@@ -19,6 +20,7 @@ export enum NEIGHBOR {
 
 
 export default class WallAI implements BattlerAI, Upgradeable {
+    level: xeno_level;
     speed: number;
     armor: number;
     effects: Effect<any>[];

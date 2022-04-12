@@ -8,10 +8,11 @@ import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { AcidEffect } from "../GameSystems/Effect/AcidEffect";
 import { Effect } from "../GameSystems/Effect/Effect";
+import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 
 export default class BaseAI implements BattlerAI {
-    
+    level: xeno_level;
     owner: AnimatedSprite;
     health: number;
     speed: number;

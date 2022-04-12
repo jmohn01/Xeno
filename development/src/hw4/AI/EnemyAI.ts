@@ -127,7 +127,7 @@ export default class EnemyAI implements BattlerAI {
             console.log("Moving in impossible ways");
             return false;
         }
-        
+
     }
 
     findPath() {

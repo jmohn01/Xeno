@@ -15,6 +15,7 @@ import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
+    level: xeno_level;
 
     armor: number;
 
