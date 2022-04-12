@@ -47,7 +47,7 @@ export default class xeno_level extends Scene {
 
     private UI: Layer;
 
-    private errorMsg: string = '';
+    private errorLabel: Label
 
     loadScene(): void {
 
@@ -83,8 +83,9 @@ export default class xeno_level extends Scene {
         Drawing.position.copy(center);
         const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
         const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
-        const ErrorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: this.errorMsg});
-        ErrorLabel.textColor = Color.RED;
+        this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text:''});
+        this.errorLabel.textColor = Color.RED;
+        
         
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
@@ -113,7 +114,7 @@ export default class xeno_level extends Scene {
                 break;
             case XENO_EVENTS.ERROR:
                 console.log("ERROR");
-                this.errorMsg = event.data.get("message");
+                this.errorLabel.text = event.data.get('message');
                 break;
             case 'turretDied':
                 const deadTurret = event.data.get('owner');
@@ -160,9 +161,10 @@ export default class xeno_level extends Scene {
 
         if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x < 1388) {
             if (this.isAnyOverlap(Input.getGlobalMousePosition().clone().add(new Vec2(16, 16)))) {
-                this.emitter.fireEvent('error', {message: 'SPACE OCCUPIED'});
+                this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: 'SPACE OCCUPIED'});
                 return;
             }
+            this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: ''})
             switch (this.placingMode) {
                 case "WALL":
                     this.placeWall(Input.getGlobalMousePressPosition().clone());
