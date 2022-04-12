@@ -52,7 +52,7 @@ export default class xeno_level extends Scene {
     loadScene(): void {
 
         this.load.tilemap("level", "xeno_assets/map/test_map.json");
-
+        this.load.spritesheet("base","xeno_assets/spritesheets/Generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
         this.load.spritesheet("turret", "xeno_assets/spritesheets/Turret_simple.json");
@@ -92,6 +92,9 @@ export default class xeno_level extends Scene {
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
 
         this.addLayer("primary", 10);
+
+        this.placebase(new Vec2(672,352));
+
 
         this.viewport.setZoomLevel(1);
 
@@ -248,6 +251,25 @@ export default class xeno_level extends Scene {
         this.aliveTraps.push(trap);
     }
 
+    placebase(position:Vec2){
+        let base: AnimatedSprite;
+        base = this.add.animatedSprite('base', 'primary');
+        base.addAI(WallAI, {}); 
+        base.setCollisionShape(new AABB(Vec2.ZERO, base.sizeWithZoom));
+        const currColRow = this.floor.getColRowAt(position);
+        base.ai.initializeAI(base, {
+            leftTile: null,
+            rightTile: null,
+            botTile: null,
+            topTile: null
+        })
+
+        base.position = currColRow.clone().mult(new Vec2(32, 32));
+        base.visible = true;
+        base.addPhysics();
+        this.aliveWalls.push(base);
+    }
+
     placeWall(position: Vec2) {
         let wall: AnimatedSprite = this.deadWalls.pop();
         console.log(this.aliveWalls);
@@ -322,7 +344,7 @@ export default class xeno_level extends Scene {
 
         if (!enemy) {
             enemy = this.add.animatedSprite("UMA", "primary");
-            enemy.addAI(EnemyAI, { health: 30, BasePos: new Vec2(800, 800), aliveWalls: this.aliveWalls, aliveTurrets: this.aliveTurrets, floor: this.floor, battleManager: this.battleManager });
+            enemy.addAI(EnemyAI, { health: 30, BasePos: new Vec2(672,352),SpawnPos:currColRow.clone().mult(new Vec2(32, 32)), aliveWalls: this.aliveWalls, aliveTurrets: this.aliveTurrets, floor: this.floor, battleManager: this.battleManager });
         }
         (enemy.ai as BattlerAI).health = 30; 
         enemy.setAIActive(true, {});

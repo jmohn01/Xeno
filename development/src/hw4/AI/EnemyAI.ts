@@ -55,6 +55,7 @@ export default class EnemyAI implements BattlerAI {
 
     // The current known position of the player
     BasePos: Vec2;
+    SpawnPos: Vec2;
 
     aliveWalls: Array<AnimatedSprite>;
 
@@ -74,6 +75,8 @@ export default class EnemyAI implements BattlerAI {
         this.health = options.health;
 
         this.BasePos = options.BasePos;
+
+        this.SpawnPos=options.SpawnPos;
 
         this.aliveWalls = options.aliveWalls;
 
@@ -125,17 +128,19 @@ export default class EnemyAI implements BattlerAI {
     atkIfPathBlocked(): boolean {
         const rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
         const tilePosition = this.floor.getColRowAt(this.owner.position);
-        if (rotation < 0.7 || rotation > 5.6) {
-            tilePosition.add(new Vec2(0, -1));
+        console.log(rotation);
+        if ((rotation >= -0.5 && rotation < 0.7) || rotation>5.5) {
+           tilePosition.add(new Vec2(0, -1));
         }
-        else if (rotation > 0.9 || rotation < 2.3) {
-            tilePosition.add(new Vec2(-1, 0));
+        else if (rotation > 0.9 && rotation < 2.3) {
+           tilePosition.add(new Vec2(-1, 0))
         }
-        else if (rotation > 2.4 || rotation < 3.8) {
-            tilePosition.add(new Vec2(1, 0));
+        else if (rotation > 2.4 && rotation < 3.8) {
+  
+        tilePosition.add(new Vec2(0, 1));
         }
-        else if (rotation > 4 || rotation < 5.4) {
-            tilePosition.add(new Vec2(0, 1));
+        else if (rotation > 4 && rotation < 5.4) {
+         tilePosition.add(new Vec2(1, 0));
         }
         else {
             console.log("Moving in impossible ways");
@@ -153,7 +158,7 @@ export default class EnemyAI implements BattlerAI {
     }
 
     findPath() {
-        const turnpoint = new Vec2(this.owner.position.x, this.BasePos.y);
+        const turnpoint = new Vec2(this.SpawnPos.x, this.BasePos.y);
         this.path.push(turnpoint.clone());
         this.path.push(this.BasePos.clone())
         return;
