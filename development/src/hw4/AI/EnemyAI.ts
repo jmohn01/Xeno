@@ -83,7 +83,7 @@ export default class EnemyAI implements BattlerAI {
 
         this.currentPath = this.getNextPath();
 
-        this.atk = new PointAttack(1, 20, new SliceAnimation(Color.BLACK), {}, options.battleManager);
+        this.atk = new PointAttack(10, 300, new SliceAnimation(Color.BLACK), {}, options.battleManager);
 
     }
 

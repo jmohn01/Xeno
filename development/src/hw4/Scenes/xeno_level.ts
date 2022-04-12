@@ -9,6 +9,7 @@ import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import TimerManager from "../../Wolfie2D/Timing/TimerManager";
+import Color from "../../Wolfie2D/Utils/Color";
 import MathUtils from "../../Wolfie2D/Utils/MathUtils";
 import BattlerAI from "../AI/BattlerAI";
 import EnemyAI from "../AI/EnemyAI";
@@ -46,6 +47,8 @@ export default class xeno_level extends Scene {
 
     private UI: Layer;
 
+    private errorMsg: string = '';
+
     loadScene(): void {
 
         this.load.tilemap("level", "xeno_assets/map/test_map.json");
@@ -80,6 +83,9 @@ export default class xeno_level extends Scene {
         Drawing.position.copy(center);
         const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
         const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
+        const ErrorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: this.errorMsg});
+        ErrorLabel.textColor = Color.RED;
+        
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
@@ -93,23 +99,21 @@ export default class xeno_level extends Scene {
             'enemyDied',
             'wallDied',
             'gameOver',
-            XENO_EVENTS.UNLOAD_ASSET
+            XENO_EVENTS.UNLOAD_ASSET,
+            XENO_EVENTS.ERROR
         ])
-
-        const slice = this.add.animatedSprite('slice', 'primary');
-        slice.position = new Vec2(300, 300);
-        slice.animation.playIfNotAlready('SLICE', true);
-
-
 
     }
 
     handleEvent(event: GameEvent) {
         switch (event.type) {
             case XENO_EVENTS.UNLOAD_ASSET:
-                console.log(event.data);
                 const asset = this.sceneGraph.getNode(event.data.get("node"));
                 asset.destroy();
+                break;
+            case XENO_EVENTS.ERROR:
+                console.log("ERROR");
+                this.errorMsg = event.data.get("message");
                 break;
             case 'turretDied':
                 const deadTurret = event.data.get('owner');
@@ -155,7 +159,10 @@ export default class xeno_level extends Scene {
         }
 
         if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x < 1388) {
-
+            if (this.isAnyOverlap(Input.getGlobalMousePosition().clone().add(new Vec2(16, 16)))) {
+                this.emitter.fireEvent('error', {message: 'SPACE OCCUPIED'});
+                return;
+            }
             switch (this.placingMode) {
                 case "WALL":
                     this.placeWall(Input.getGlobalMousePressPosition().clone());
@@ -163,10 +170,10 @@ export default class xeno_level extends Scene {
                 case "TRAP":
                     break;
                 case "TURRET":
-                    this.placeTurret(Input.getGlobalMousePosition().clone());
+                    this.placeTurret(Input.getGlobalMousePressPosition().clone());
                     break;
                 case "ENEMY":
-                    this.placeEnemey(Input.getGlobalMousePosition().clone());
+                    this.placeEnemey(Input.getGlobalMousePressPosition().clone());
             }
         }
         else if (Input.isMouseJustPressed(0)) {
@@ -217,9 +224,11 @@ export default class xeno_level extends Scene {
 
     isAnyOverlap(position: Vec2): boolean {
         const tilePosition = this.floor.getColRowAt(position);
+        console.log(this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)));
         return this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
-            this.aliveTraps.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition));
+            this.aliveTraps.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
+            this.aliveEnemies.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))
     }
 
 
@@ -284,7 +293,6 @@ export default class xeno_level extends Scene {
             botTile: botTile,
             topTile: topTile
         })
-
 
         wall.position = currColRow.clone().mult(new Vec2(32, 32));
         wall.visible = true;
