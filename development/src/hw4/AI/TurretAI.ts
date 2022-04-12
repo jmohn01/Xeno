@@ -10,7 +10,6 @@ import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { BulletAnimation } from "../GameSystems/AttackAnimation/BulletAnimation";
 import { Effect } from "../GameSystems/Effect/Effect";
-import Weapon from "../GameSystems/items/Weapon";
 import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
@@ -19,23 +18,23 @@ export default class TurretAI implements BattlerAI, Upgradeable {
 
     armor: number;
 
-    range: number = 300; 
-    
+    range: number = 300;
+
     speed: number;
-    
+
     owner: AnimatedSprite;
-    
+
     health: number;
-    
-    target: BattlerAI; 
-    
+
+    target: BattlerAI;
+
     effects: Effect<any>[];
 
     atkEffect: EffectData;
 
     emitter: Emitter = new Emitter();
 
-    atk: PointAttack = new PointAttack(1, 1000, new BulletAnimation(Color.WHITE), {}); 
+    atk: PointAttack;
 
     damage(damage: number) {
         this.health -= damage;
@@ -43,7 +42,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("turretDied", { wall: this.owner });
+            this.emitter.fireEvent("turretDied", { owner: this.owner });
         }
     }
 
@@ -51,6 +50,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
         this.owner = owner;
         this.health = 20;
         this.owner.animation.playIfNotAlready('IDLE', true);
+        this.atk = new PointAttack(10, 1000, new BulletAnimation(Color.YELLOW), {}, options.battleManager);
     }
 
     destroy(): void {
@@ -66,12 +66,10 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     update(deltaT: number): void {
-        if (!this.target) {
-            this.target = (this.owner.getScene() as xeno_level).findEnemyInRange(this.owner.position, this.range);
-        }
+        this.target = (this.owner.getScene() as xeno_level).findEnemyInRange(this.owner.position, this.range);
         if (this.target) {
             const lookDir = this.owner.position.dirTo(this.target.owner.position);
-            this.atk.attack(this, this.target); 
+            this.atk.attack(this, this.target);
             this.owner.rotation = Vec2.UP.angleToCCW(lookDir);
         }
     }
@@ -88,7 +86,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             }
         }
         this.effects.push(effect);
-        effect.applyEffect(); 
+        effect.applyEffect();
     }
 
 }

@@ -3,6 +3,10 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { WALL_TYPE } from "../constants";
+import AOEAttack from "../GameSystems/Attack/AOEAttack";
+import { EffectData } from "../GameSystems/Attack/internal";
+import PointAttack from "../GameSystems/Attack/PointAttack";
+import { Effect } from "../GameSystems/Effect/Effect";
 import BattlerAI from "./BattlerAI";
 import Upgradeable from "./Upgradable";
 
@@ -15,6 +19,12 @@ export enum NEIGHBOR {
 
 
 export default class WallAI implements BattlerAI, Upgradeable {
+    speed: number;
+    armor: number;
+    effects: Effect<any>[];
+    atkEffect: EffectData;
+    atk: PointAttack | AOEAttack;
+    
 
 
     owner: AnimatedSprite;
@@ -33,7 +43,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("wallDied", {wall: this.owner}); 
+            this.emitter.fireEvent("wallDied", {owner: this.owner}); 
         }
 
     }
@@ -58,6 +68,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
     }
 
     delNeighbor(dir: NEIGHBOR) {
+        this.neighboringWall[dir] = null; 
         this.neighborNum--;
         this.updateShape(); 
     }
@@ -108,6 +119,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
     update(deltaT: number): void {
         
+    }
+
+    addEffect(effect: Effect<any>): void {
+        throw new Error("Method not implemented.");
     }
 
     static getWallShape(

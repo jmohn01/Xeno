@@ -1,7 +1,5 @@
 import Game from "./Wolfie2D/Loop/Game";
 import RegistryManager from "./Wolfie2D/Registry/RegistryManager";
-import WeaponTemplateRegistry from "./hw4/Registry/WeaponRegistry";
-import WeaponTypeRegistry from "./hw4/Registry/WeaponTypeRegistry";
 import MainMenu from "./hw4/Scenes/MainMenu";
 import GoapActionPlanner from "./Wolfie2D/AI/GoapActionPlanner";
 import SplashScreen from "./hw4/Scenes/SplashScreen";
@@ -30,12 +28,6 @@ import { CANVAS_SIZE } from "./hw4/constants";
         showDebug: false                       // Whether to show debug messages. You can change this to true if you want
     }
 
-    // Set up custom registries
-    let weaponTemplateRegistry = new WeaponTemplateRegistry();
-    RegistryManager.addCustomRegistry("weaponTemplates", weaponTemplateRegistry);
-    
-    let weaponTypeRegistry = new WeaponTypeRegistry();
-    RegistryManager.addCustomRegistry("weaponTypes", weaponTypeRegistry);
 
     // Create a game with the options specified
     const game = new Game(options);

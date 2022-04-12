@@ -8,7 +8,6 @@ import { AcidEffect } from "./Effect/AcidEffect";
 import { Effect } from "./Effect/Effect";
 import { FireEffect } from "./Effect/FireEffec";
 import { SlowEffect } from "./Effect/SlowEffect";
-import Weapon from "./items/Weapon";
 
 export default class BattleManager {
 

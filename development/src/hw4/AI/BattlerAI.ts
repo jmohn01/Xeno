@@ -7,6 +7,7 @@ import PointAttack from "../GameSystems/Attack/PointAttack";
 import { Effect } from "../GameSystems/Effect/Effect";
 
 export default interface BattlerAI extends AI {
+
     owner: GameNode;
 
     health: number;

@@ -11,31 +11,36 @@ import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
-import Weapon from "../GameSystems/items/Weapon";
 import { hw4_Events, hw4_Names, hw4_Statuses } from "../hw4_constants";
 import BattlerAI from "./BattlerAI";
-import Alert from "./EnemyStates/Alert";
-import Active from "./EnemyStates/Active";
-import Guard from "./EnemyStates/Guard";
-import Patrol from "./EnemyStates/Patrol";
+
 import { EffectData } from "../GameSystems/Attack/internal";
 import { Effect } from "../GameSystems/Effect/Effect";
-import AttackAction from "./EnemyActions/AttackAction";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import PointAttack from "../GameSystems/Attack/PointAttack";
+import Emitter from "../../Wolfie2D/Events/Emitter";
+import { SliceAnimation } from "../GameSystems/AttackAnimation/SliceAnimation";
+import Color from "../../Wolfie2D/Utils/Color";
 
 
-export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
+export default class EnemyAI implements BattlerAI {
+
     atk: PointAttack;
+
     armor: number;
+
     effects: Effect<any>[];
+
     atkEffect: EffectData;
-    routeIndex: number;
-    floor: OrthogonalTilemap;
+
+    routeIndex: number = 0;
+
     aliveTurrets: Array<AnimatedSprite>;
-    addEffect(effect: Effect<any>): void {
-        throw new Error("Method not implemented.");
-    }
+    
+    floor: OrthogonalTilemap;
+
+    emitter: Emitter = new Emitter();
+
     /** The owner of this AI */
     owner: AnimatedSprite;
 
@@ -48,9 +53,6 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
     /** The default movement speed of this AI */
     speed: number = 20;
 
-    /** The weapon this AI has */
-    weapon: Weapon;
-
     // The current known position of the player
     BasePos: Vec2;
 
@@ -60,7 +62,7 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
     inRange: number;
 
     // Path to player
-    Path: Array<Vec2>;
+    path: Array<Vec2> = [];
 
     currentPath: NavigationPath;
 
@@ -71,17 +73,18 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
 
         this.health = options.health;
 
-        this.weapon = options.weapon;
-
         this.BasePos = options.BasePos;
-
-        this.inRange = options.inRange;
 
         this.aliveWalls = options.aliveWalls;
 
+        this.aliveTurrets = options.aliveTurrets;
+
         this.floor = options.floor;
-        // Initialize to the default state
-        this.initialize(EnemyStates.DEFAULT);
+
+        this.currentPath = this.getNextPath();
+
+        this.atk = new PointAttack(1, 20, new SliceAnimation(Color.BLACK), {}, options.battleManager);
+
     }
 
     activate(options: Record<string, any>): void { }
@@ -93,74 +96,87 @@ export default class EnemyAI extends StateMachineGoapAI implements BattlerAI {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("enemyDied", {enemy: this.owner})
+            this.emitter.fireEvent("enemyDied", { owner: this.owner })
         }
     }
 
-    moveonepath(deltaT: number):void{
-        if(this.currentPath.isDone()){
+    moveOnePath(deltaT: number): void {
+        if (this.currentPath.isDone()) {
             this.currentPath = this.getNextPath();
         } else {
-            if(this.attackifpathblocked()){
+            if (this.atkIfPathBlocked()) {
                 return;
             }
-            else{
+            else {
                 this.owner.moveOnPath(this.speed * deltaT, this.currentPath);
-                this.owner.rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
             }
         }
     }
 
     getNextPath(): NavigationPath {
-        let path = this.owner.getScene().getNavigationManager().getPath(hw4_Names.NAVMESH, this.owner.position, this.Path[this.routeIndex], true);
+        let stack = new Stack<Vec2>();
+        this.findPath();
+        stack.push(this.path[this.routeIndex]);
+        let path = new NavigationPath(stack);
         this.routeIndex = this.routeIndex + 1;
         return path;
     }
 
-    attackifpathblocked(): boolean{
-        const rotation =Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
+    atkIfPathBlocked(): boolean {
+        const rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
         const tilePosition = this.floor.getColRowAt(this.owner.position);
-        if(rotation<0.7 || rotation>5.6){
+        if (rotation < 0.7 || rotation > 5.6) {
             tilePosition.add(new Vec2(0, -1));
         }
-        else if(rotation>0.9 || rotation<2.3){
+        else if (rotation > 0.9 || rotation < 2.3) {
             tilePosition.add(new Vec2(-1, 0));
         }
-        else if(rotation>2.4 || rotation<3.8){
+        else if (rotation > 2.4 || rotation < 3.8) {
             tilePosition.add(new Vec2(1, 0));
         }
-        else if(rotation>4 || rotation<5.4){
+        else if (rotation > 4 || rotation < 5.4) {
             tilePosition.add(new Vec2(0, 1));
         }
-        else{
+        else {
             console.log("Moving in impossible ways");
             return false;
         }
-        if(this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))){
+        if (this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))) {
             this.atk.attack(this, this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
         }
-        else if(this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))){
+        else if (this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))) {
             this.atk.attack(this, this.aliveWalls.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)).ai as BattlerAI);
         }
-        else{
+        else {
             return false;
         }
     }
-    findpath(){
-        const turnpoint= new Vec2(this.owner.position.x,this.BasePos.y);
-        this.Path.push(turnpoint.clone());
-        this.Path.push(this.BasePos.clone())
+
+    findPath() {
+        const turnpoint = new Vec2(this.owner.position.x, this.BasePos.y);
+        this.path.push(turnpoint.clone());
+        this.path.push(this.BasePos.clone())
         return;
     }
 
-    update(deltaT: number){
-        super.update(deltaT);
-        if(!this.Path){
-            this.findpath();
+    update(deltaT: number) {
+        if (!this.path.length) {
+            this.findPath();
         }
-        else{
-            this.moveonepath(deltaT);
+        else {
+            this.moveOnePath(deltaT);
         }
+    }
+
+    addEffect(effect: Effect<any>): void {
+        throw new Error("Method not implemented.");
+    }
+
+    destroy(): void {
+        throw new Error("Method not implemented.");
+    }
+    handleEvent(event: GameEvent): void {
+        throw new Error("Method not implemented.");
     }
 }
 
