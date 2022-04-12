@@ -22,9 +22,9 @@ export default class MainMenu extends Scene {
     loadScene() {
         this.load.image("background", "xeno_assets/images/background.png")
         this.load.image("leftclick", "xeno_assets/images/light/Mouse_Left_key_Light.png")
-        this.load.image("ESC", "xeno_assets/images/light/Esc_Key_Light.png")
-        this.load.image("semicolon", "xeno_assets/images/light/Semicolon_Key_Light.png")
-        this.load.image("quote", "xeno_assets/images/light/Quote_Key_Light.png")
+        this.load.image("ESC", "xeno_assets/images/Light/Esc_Key_Light.png")
+        this.load.image("semicolon", "xeno_assets/images/Light/Semicolon_Key_Light.png")
+        this.load.image("quote", "xeno_assets/images/Light/Quote_Key_Light.png")
     }
 
     startScene() {

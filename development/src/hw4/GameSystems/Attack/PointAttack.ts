@@ -46,7 +46,7 @@ export default class PointAttack {
         if (this.atkAnimation instanceof BulletAnimation) {
             this.atkAnimation.doAnimation(from.owner.position, to.owner.position, this.assets[0]);
         } else if (this.atkAnimation instanceof SliceAnimation) {
-            this.atkAnimation.doAnimation(from.owner.position, to.owner.position, this.assets[0], from.owner.rotation);
+            this.atkAnimation.doAnimation(from.owner.position, from.owner.position.dirTo(to.owner.position), this.assets[0], from.owner.rotation);
         }
 
         this.battleManager.handlePointAtk(to, this.damage, this.effects); 
