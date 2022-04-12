@@ -262,12 +262,14 @@ export default class xeno_level extends Scene {
             rightTile: null,
             botTile: null,
             topTile: null
-        })
+        });
+        (base.ai as WallAI).health = 1 << 30;
 
         base.position = currColRow.clone().mult(new Vec2(32, 32));
         base.visible = true;
         base.addPhysics();
         this.aliveWalls.push(base);
+        base.animation.play("IDLE", true);
     }
 
     placeWall(position: Vec2) {

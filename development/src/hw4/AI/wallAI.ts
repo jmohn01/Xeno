@@ -51,7 +51,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        this.health = 40; 
+        this.health = 100; 
         this.type = WALL_TYPE.DIRT
         this.neighboringWall[NEIGHBOR.LEFT] = options.leftTile;
         this.neighboringWall[NEIGHBOR.RIGHT] = options.rightTile;

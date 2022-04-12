@@ -8,7 +8,7 @@
     "durationType": "time",
     "animations": [
         {
-            "name": "Idle",
+            "name": "IDLE",
             "frames": [
                 {
                     "index": 0,

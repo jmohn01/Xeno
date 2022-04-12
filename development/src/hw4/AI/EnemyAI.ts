@@ -36,7 +36,7 @@ export default class EnemyAI implements BattlerAI {
     routeIndex: number = 0;
 
     aliveTurrets: Array<AnimatedSprite>;
-    
+
     floor: OrthogonalTilemap;
 
     emitter: Emitter = new Emitter();
@@ -76,7 +76,7 @@ export default class EnemyAI implements BattlerAI {
 
         this.BasePos = options.BasePos;
 
-        this.SpawnPos=options.SpawnPos;
+        this.SpawnPos = options.SpawnPos;
 
         this.aliveWalls = options.aliveWalls;
 
@@ -129,18 +129,18 @@ export default class EnemyAI implements BattlerAI {
         const rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
         const tilePosition = this.floor.getColRowAt(this.owner.position);
         console.log(rotation);
-        if ((rotation >= -0.5 && rotation < 0.7) || rotation>5.5) {
-           tilePosition.add(new Vec2(0, -1));
+        if ((rotation >= -0.5 && rotation < 0.7) || rotation > 5.5) {
+            tilePosition.add(new Vec2(0, -1));
         }
         else if (rotation > 0.9 && rotation < 2.3) {
-           tilePosition.add(new Vec2(-1, 0))
+            tilePosition.add(new Vec2(-1, 0))
         }
         else if (rotation > 2.4 && rotation < 3.8) {
-  
-        tilePosition.add(new Vec2(0, 1));
+
+            tilePosition.add(new Vec2(0, 1));
         }
         else if (rotation > 4 && rotation < 5.4) {
-         tilePosition.add(new Vec2(1, 0));
+            tilePosition.add(new Vec2(1, 0));
         }
         else {
             console.log("Moving in impossible ways");
