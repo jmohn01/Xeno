@@ -11,6 +11,11 @@
         "source": "/benchmark1",
         "destination": "/benchmark1/designdoc.html",
         "type": 301
+      },
+      {
+        "source": "/benchmark2",
+        "destination": "/benchmark2/dist/index.html",
+        "type": 301
       }
     ],
     "ignore": [
