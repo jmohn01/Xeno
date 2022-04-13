@@ -3,6 +3,7 @@ import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import BattlerAI from "../AI/BattlerAI";
 import { XENO_ACTOR_TYPE } from "../constants";
+import xeno_level from "../Scenes/xeno_level";
 import { EffectData } from "./Attack/internal";
 import { AcidEffect } from "./Effect/AcidEffect";
 import { Effect } from "./Effect/Effect";
@@ -11,16 +12,10 @@ import { SlowEffect } from "./Effect/SlowEffect";
 
 export default class BattleManager {
 
-    private base: AnimatedSprite
-    private turrets: Array<AnimatedSprite>
-    private walls: Array<AnimatedSprite>
-    private enemies: Array<AnimatedSprite>
+    private level: xeno_level;
 
-    constructor(turrets: Array<AnimatedSprite>, walls: Array<AnimatedSprite>, base: AnimatedSprite, enemies: Array<AnimatedSprite>) {
-        this.turrets = turrets;
-        this.walls = walls;
-        this.enemies = enemies;
-        this.base = base;
+    constructor(level: xeno_level) {
+        this.level = level;
     }
 
     handlePointAtk(to: BattlerAI, dmg: number, effects: EffectData) {
@@ -30,38 +25,25 @@ export default class BattleManager {
 
     handleAOEAtk(from: Vec2, r: number, dmg: number, effects: EffectData, atkerType: XENO_ACTOR_TYPE) {
         const r2 = r * r;
+        let targets: BattlerAI[];
         switch (atkerType) {
             case XENO_ACTOR_TYPE.ENEMY:
-                this.turrets
-                    .filter((t) => from.distanceSqTo(t.position) <= r2)
-                    .forEach((t) => {
-                        const target = t.ai as BattlerAI;
-                        target.damage(dmg);
-                        BattleManager.addEffects(effects, target);
-                    })
-                this.walls
-                    .filter((w) => from.distanceSqTo(w.position) <= r2)
-                    .forEach((w) => {
-                        const target = w.ai as BattlerAI;
-                        target.damage(dmg);
-                        BattleManager.addEffects(effects, target);
-                    })
+                targets = this.level.findFriendsInRange(from, r);
                 break;
             case XENO_ACTOR_TYPE.FRIEND:
-                this.enemies
-                    .filter((e) => from.distanceSqTo(e.position) <= r2)
-                    .forEach((e) => {
-                        const target = e.ai as BattlerAI;
-                        console.log("HIT: ", target);
-                        target.damage(dmg);
-                        BattleManager.addEffects(effects, target);
-                    })
+                targets = this.level.findEnemiesInRange(from, r);
+                break;
         }
+        targets.forEach((e) => {
+            BattleManager.addEffects(effects, e);
+            e.damage(dmg);
+        })
     }
 
     private static addEffects(data: EffectData, target: BattlerAI) {
         if (data.fire) {
-            target.addEffect(new FireEffect(data.fire.duration, data.fire.ticks, target));
+            console.log(target.owner.id);
+            target.addEffect(new FireEffect(data.fire.duration, data.fire.ticks, data.fire.damage, target));
         }
         if (data.slow) {
             target.addEffect(new SlowEffect(data.slow.duration, data.slow.percent, target));

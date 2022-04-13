@@ -78,8 +78,11 @@ export default class EnemyAI implements BattlerAI {
 
     damage(damage: number): void {
         this.health -= damage;
-        // If health goes below 0, disable AI and fire enemyDied event
         if (this.health <= 0) {
+            this.effects.forEach((e) => {
+                e.endEffect();
+            })
+            console.log(this.effects);
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;

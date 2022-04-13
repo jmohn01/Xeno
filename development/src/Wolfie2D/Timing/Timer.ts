@@ -91,7 +91,7 @@ export default class Timer implements Updateable {
         }
 
         // Loop if we want to
-        if(this.loop){
+        if(this.loop && this.state === TimerState.STOPPED){
             this.state = TimerState.ACTIVE;
             this.timeLeft = this.totalTime;
         }

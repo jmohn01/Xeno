@@ -9,32 +9,35 @@ export class FireEffect extends Effect<FireEffect> {
 
     damage: number;
 
-    ticks: number; 
+    ticks: number;
 
-    private dotTimer: Timer; 
+    private dotTimer: Timer;
 
-    private durationTimer: Timer; 
+    private durationTimer: Timer;
 
-    type: XENO_EFFECT_TYPE = XENO_EFFECT_TYPE.FIRE_EFFECT; 
+    type: XENO_EFFECT_TYPE = XENO_EFFECT_TYPE.FIRE_EFFECT;
 
-    constructor(duration: number, ticks: number, target: BattlerAI) {
-        super(); 
+    constructor(duration: number, ticks: number, damage: number, target: BattlerAI) {
+        super();
+        console.log(duration, ticks, damage, target);
         this.target = target;
-        this.durationTimer = new Timer(duration, this.endEffect); 
+        this.damage = damage;
+        this.durationTimer = new Timer(duration, this.endEffect);
         this.dotTimer = new Timer(duration / ticks, this.dot, true);
     }
 
     applyEffect(): void {
-        this.dotTimer.start(); 
+        this.dotTimer.start();
         this.durationTimer.start();
     }
 
-    dot(): void {
-        this.target.damage(this.damage); 
+    dot = (): void => {
+        this.target.damage(this.damage);
     }
 
-    endEffect(): void {
-        this.dotTimer.pause(); 
+    endEffect = (): void => {
+        this.durationTimer.pause();
+        this.dotTimer.pause();
         this.target.removeEffect(this.id);
     }
 

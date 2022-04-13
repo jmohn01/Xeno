@@ -103,7 +103,7 @@ export default class xeno_level extends Scene {
 
         this.placeBase(new Vec2(672, 352));
 
-        this.battleManager = new BattleManager(this.aliveTurrets, this.aliveWalls, this.base, this.aliveEnemies);
+        this.battleManager = new BattleManager(this);
 
         this.viewport.setZoomLevel(1);
 
@@ -140,18 +140,19 @@ export default class xeno_level extends Scene {
                 break;
             case XENO_EVENTS.ENEMY_DIED:
                 const deadEnemy = event.data.get('owner');
+                console.log("DEAD ENEMY: %d", deadEnemy.id);
                 this.aliveEnemies = this.aliveEnemies.filter((e) => e.id != deadEnemy.id);
                 this.deadEnemies.push(deadEnemy);
                 break;
             case XENO_EVENTS.GAME_OVER:
                 break;
             case XENO_EVENTS.TRIGGER_TRAP:
-               
+
                 const node = this.sceneGraph.getNode(event.data.get("node"));
                 const other = this.sceneGraph.getNode(event.data.get("other"));
-                
+
                 const trapAI = (node.ai instanceof TrapAI ? node.ai : other.ai as TrapAI);
-                
+
                 trapAI.attack();
         }
     }
@@ -266,9 +267,14 @@ export default class xeno_level extends Scene {
         if (!trap) {
             trap = this.add.animatedSprite('traps', 'primary');
             let effectData: EffectData = {
-                slow: {
+                // slow: {
+                //     duration: 2000,
+                //     percent: 0.4,
+                // },
+                fire: {
                     duration: 2000,
-                    percent: 0.4,
+                    ticks: 5,
+                    damage: 10
                 }
             }
             trap.addAI(TrapAI, {
@@ -369,7 +375,9 @@ export default class xeno_level extends Scene {
     }
 
     placeEnemey(tilePosition: Vec2) {
+        console.log(`DEAD ENEMIES: ${this.deadEnemies.map((e) => e.id)}`);
         let enemy = this.deadEnemies.pop();
+        
         if (!enemy) {
             enemy = this.add.animatedSprite("UMA", "primary");
             enemy.addAI(EnemyAI, {
@@ -380,6 +388,7 @@ export default class xeno_level extends Scene {
                 battleManager: this.battleManager
             });
         }
+        (enemy.ai as EnemyAI).health = 30;
         enemy.animation.playIfNotAlready("IDLE", true);
         enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
@@ -387,6 +396,7 @@ export default class xeno_level extends Scene {
         enemy.setGroup(XENO_ACTOR_TYPE.ENEMY);
         enemy.setAIActive(true, {});
         this.aliveEnemies.push(enemy);
+        console.log(`ALIVE ENEMIES: ${this.aliveEnemies.map((e) => e.id)}`);
     }
 
     updateNeighbors(wall: AnimatedSprite) {
@@ -419,6 +429,17 @@ export default class xeno_level extends Scene {
                 return (this.aliveEnemies[i].ai as BattlerAI);
             }
         }
+    }
+
+    findEnemiesInRange(from: Vec2, range: number): BattlerAI[] {
+        return this.aliveEnemies.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI));
+    }
+
+    findFriendsInRange(from: Vec2, range: number): BattlerAI[] {
+        return [
+            ...this.aliveWalls.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI)),
+            ...this.aliveTurrets.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI))
+        ]
     }
 
     findFriendAtColRow(colRow: Vec2): BattlerAI | undefined {
