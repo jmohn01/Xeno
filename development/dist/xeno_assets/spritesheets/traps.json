@@ -1,6 +1,6 @@
 {
-    "name": "Turret_simple",
-    "spriteSheetImage": "Turret_simple.png",
+    "name": "traps",
+    "spriteSheetImage": "traps.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
     "columns": 12,

@@ -28,7 +28,6 @@ export class SliceAnimation extends AtkAnimation {
     createRequiredAssets(scene: Scene): [AnimatedSprite] {
         let slice = scene.add.animatedSprite("slice", "primary");
         slice.animation.play("NORMAL", true);
-        console.log(slice);
         return [slice];
     }
 

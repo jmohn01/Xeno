@@ -4,6 +4,7 @@ import Receiver from "../Events/Receiver";
 import Emitter from "../Events/Emitter";
 import Map from "../DataTypes/Map";
 import Physical from "../DataTypes/Interfaces/Physical";
+import { XENO_ACTOR_TYPE } from "../../hw4/constants";
 
 /**
  * An abstract physics manager.
@@ -107,6 +108,7 @@ export default abstract class PhysicsManager implements Updateable {
 				// Shift the bit over
 				g = g << 1;
 			}
+			return names;
 		}
 	}
 }

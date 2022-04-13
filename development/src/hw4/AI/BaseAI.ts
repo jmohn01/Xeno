@@ -1,5 +1,6 @@
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
+import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { XENO_EVENTS } from "../constants";
@@ -17,26 +18,26 @@ export default class BaseAI implements BattlerAI {
     health: number;
     speed: number;
     armor: number;
-    effects: Effect<any>[];
+    effects: Effect<any>[] = [];
     atkEffect: EffectData;
     atk: PointAttack | AOEAttack;
-    emmitter: Emitter = new Emitter(); 
+    emmitter: Emitter = new Emitter();
+
 
     damage(damage: number): void {
         this.health -= (damage - this.armor);
         if (this.health <= 0) {
             this.emmitter.fireEvent(XENO_EVENTS.GAME_OVER, { won: false });
-        } 
+        }
     }
 
     addEffect(effect: Effect<any>): void {
-        if (effect instanceof AcidEffect) {
-            for (let i = 0; i < this.effects.length; i++) {
-                const curr = this.effects[i];
-                if (curr.equal(effect)) {
-                    curr.refreshEffect();
-                    return; 
-                }
+        if (!(effect instanceof AcidEffect)) return;
+        for (let i = 0; i < this.effects.length; i++) {
+            const curr = this.effects[i];
+            if (curr.equal(effect)) {
+                curr.refreshEffect();
+                return;
             }
         }
         this.effects.push(effect);
@@ -46,7 +47,8 @@ export default class BaseAI implements BattlerAI {
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
         this.health = options.health;
-        this.armor = options.armor; 
+        this.armor = options.armor;
+        
     }
 
     destroy(): void {
@@ -58,11 +60,11 @@ export default class BaseAI implements BattlerAI {
     }
 
     handleEvent(event: GameEvent): void {
-        throw new Error("Method not implemented.");
+        
     }
 
     update(deltaT: number): void {
-        throw new Error("Method not implemented.");
+        
     }
 
     removeEffect(id: number): void {

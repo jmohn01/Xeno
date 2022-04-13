@@ -35,7 +35,7 @@ export class FireEffect extends Effect<FireEffect> {
 
     endEffect(): void {
         this.dotTimer.pause(); 
-        this.emitter.fireEvent(XENO_EVENTS.EFFECT_END, {id: this.id, owner: this.target})
+        this.target.removeEffect(this.id);
     }
 
     refreshEffect(): void {

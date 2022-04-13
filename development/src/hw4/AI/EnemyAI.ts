@@ -6,6 +6,7 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import Color from "../../Wolfie2D/Utils/Color";
+import { XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { SliceAnimation } from "../GameSystems/AttackAnimation/SliceAnimation";
@@ -22,7 +23,7 @@ export default class EnemyAI implements BattlerAI {
 
     armor: number;
 
-    effects: Effect<any>[];
+    effects: Effect<any>[] = [];
 
     atkEffect: EffectData;
 
@@ -55,6 +56,7 @@ export default class EnemyAI implements BattlerAI {
     currentPath: NavigationPath;
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
+
         this.owner = owner;
 
         this.maxHealth = options.health;
@@ -69,6 +71,7 @@ export default class EnemyAI implements BattlerAI {
 
         this.atk = new PointAttack(10, 300, new SliceAnimation(Color.BLACK), {}, options.battleManager);
 
+        this.level = options.level;
     }
 
     activate(options: Record<string, any>): void { }
@@ -80,7 +83,7 @@ export default class EnemyAI implements BattlerAI {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("enemyDied", { owner: this.owner })
+            this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner })
         }
     }
 
@@ -107,9 +110,9 @@ export default class EnemyAI implements BattlerAI {
     }
 
     atkIfPathBlocked(): boolean {
+        const floor = this.level.getFloor();
         const rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
-        const tilePosition = this.floor.getColRowAt(this.owner.position);
-        console.log(rotation);
+        const tilePosition = floor.getColRowAt(this.owner.position);
         if ((rotation >= -0.5 && rotation < 0.7) || rotation > 5.5) {
             tilePosition.add(new Vec2(0, -1));
         }
@@ -127,7 +130,10 @@ export default class EnemyAI implements BattlerAI {
             console.log("Moving in impossible ways");
             return false;
         }
-
+        const target = this.level.findFriendAtColRow(tilePosition);
+        if (!target) return false;
+        this.atk.attack(this, target);
+        return true;
     }
 
     findPath() {

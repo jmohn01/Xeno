@@ -1,8 +1,9 @@
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
+import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
-import { WALL_TYPE } from "../constants";
+import { WALL_TYPE, XENO_EVENTS } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
@@ -36,6 +37,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
     type: WALL_TYPE
     shape: string
     emitter: Emitter = new Emitter();
+    receiver: Receiver = new Receiver();
 
 
     damage(damage: number): void {
@@ -45,7 +47,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("wallDied", {owner: this.owner}); 
+            this.emitter.fireEvent(XENO_EVENTS.WALL_DIED, {owner: this.owner}); 
         }
 
     }
@@ -61,6 +63,9 @@ export default class WallAI implements BattlerAI, Upgradeable {
         this.neighboringWall[NEIGHBOR.BOT] = options.botTile;
         this.neighborNum = this.neighboringWall.filter((e) => !!e).length;
         this.updateShape(); 
+        this.receiver.subscribe([
+            XENO_EVENTS.EFFECT_END
+        ])
     }
 
     addNeighbor(w: AnimatedSprite, dir: NEIGHBOR) {
@@ -116,7 +121,13 @@ export default class WallAI implements BattlerAI, Upgradeable {
     }
 
     handleEvent(event: GameEvent): void {
-        throw new Error("Method not implemented.");
+        switch(event.type) {
+            case XENO_EVENTS.EFFECT_END:
+                if (event.data.get("owner") === this) {
+                    this.removeEffect(event.data.get("id"));
+                }
+                break ;
+        }
     }
 
     update(deltaT: number): void {

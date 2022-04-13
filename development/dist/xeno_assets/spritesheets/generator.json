@@ -1,6 +1,6 @@
 {
-    "name": "Generator",
-    "spriteSheetImage": "Generator.png",
+    "name": "generator",
+    "spriteSheetImage": "generator.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
     "columns": 3,

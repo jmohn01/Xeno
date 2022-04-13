@@ -11,11 +11,14 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import TimerManager from "../../Wolfie2D/Timing/TimerManager";
 import Color from "../../Wolfie2D/Utils/Color";
 import MathUtils from "../../Wolfie2D/Utils/MathUtils";
+import BaseAI from "../AI/BaseAI";
 import BattlerAI from "../AI/BattlerAI";
 import EnemyAI from "../AI/EnemyAI";
+import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { TRAP_TYPE, XENO_EVENTS } from "../constants";
+import { TRAP_TYPE, XENO_ACTOR_TYPE, XENO_EVENTS } from "../constants";
+import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
 
 let idCounter = 0;
@@ -26,6 +29,8 @@ export default class xeno_level extends Scene {
     private placingMode: "WALL" | "TURRET" | "TRAP" | "ENEMY" = "WALL";
 
     private floor: OrthogonalTilemap;
+
+    private base: AnimatedSprite;
 
     private deadWalls: Array<AnimatedSprite> = new Array();
 
@@ -43,7 +48,7 @@ export default class xeno_level extends Scene {
 
     private aliveEnemies: Array<AnimatedSprite> = new Array();
 
-    private battleManager: BattleManager = new BattleManager();
+    private battleManager: BattleManager;
 
     private UI: Layer;
 
@@ -52,7 +57,7 @@ export default class xeno_level extends Scene {
     loadScene(): void {
 
         this.load.tilemap("level", "xeno_assets/map/test_map.json");
-        this.load.spritesheet("base","xeno_assets/spritesheets/generator.json");
+        this.load.spritesheet("base", "xeno_assets/spritesheets/generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
         this.load.spritesheet("turret", "xeno_assets/spritesheets/turret_simple.json");
@@ -78,33 +83,37 @@ export default class xeno_level extends Scene {
 
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
 
+
+
+
         this.UI = this.addUILayer("UI");
         const Drawing = this.add.sprite("Drawing", "UI");
         Drawing.position.copy(center);
         const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
         const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
-        this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text:''});
+        this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: '' });
         this.errorLabel.textColor = Color.RED;
-        
-        
+
+
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
 
         this.addLayer("primary", 10);
 
-        this.placebase(new Vec2(672,352));
+        this.placeBase(new Vec2(672, 352));
 
+        this.battleManager = new BattleManager(this.aliveTurrets, this.aliveWalls, this.base, this.aliveEnemies);
 
         this.viewport.setZoomLevel(1);
 
         this.receiver.subscribe([
-            'turretDied',
-            'enemyDied',
-            'wallDied',
-            'gameOver',
+            XENO_EVENTS.WALL_DIED,
+            XENO_EVENTS.TURRET_DIED,
+            XENO_EVENTS.ENEMY_DIED,
             XENO_EVENTS.UNLOAD_ASSET,
-            XENO_EVENTS.ERROR
+            XENO_EVENTS.TRIGGER_TRAP,
+            XENO_EVENTS.ERROR,
         ])
 
     }
@@ -116,26 +125,34 @@ export default class xeno_level extends Scene {
                 asset.destroy();
                 break;
             case XENO_EVENTS.ERROR:
-                console.log("ERROR");
                 this.errorLabel.text = event.data.get('message');
                 break;
             case XENO_EVENTS.TURRET_DIED:
                 const deadTurret = event.data.get('owner');
                 this.aliveTurrets = this.aliveTurrets.filter((e) => e.id != deadTurret.id);
-                this.deadTurrets.push(deadTurret); 
+                this.deadTurrets.push(deadTurret);
                 break;
             case XENO_EVENTS.WALL_DIED:
                 const deadWall = event.data.get('owner');
                 this.updateNeighbors(deadWall);
                 this.aliveWalls = this.aliveWalls.filter((e) => e.id != deadWall.id);
-                this.deadWalls.push(deadWall); 
+                this.deadWalls.push(deadWall);
                 break;
             case XENO_EVENTS.ENEMY_DIED:
                 const deadEnemy = event.data.get('owner');
                 this.aliveEnemies = this.aliveEnemies.filter((e) => e.id != deadEnemy.id);
-                this.deadEnemies.push(deadEnemy); 
+                this.deadEnemies.push(deadEnemy);
                 break;
             case XENO_EVENTS.GAME_OVER:
+                break;
+            case XENO_EVENTS.TRIGGER_TRAP:
+               
+                const node = this.sceneGraph.getNode(event.data.get("node"));
+                const other = this.sceneGraph.getNode(event.data.get("other"));
+                
+                const trapAI = (node.ai instanceof TrapAI ? node.ai : other.ai as TrapAI);
+                
+                trapAI.attack();
         }
     }
 
@@ -153,37 +170,37 @@ export default class xeno_level extends Scene {
             this.placingMode = 'TURRET';
         }
 
-        
+
         if (Input.isKeyJustPressed('3')) {
             this.placingMode = 'ENEMY';
         }
-        
+
         if (Input.isKeyJustPressed('4')) {
             this.placingMode = 'TRAP';
         }
 
-        if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().clone().x < 1388) {
-            if (this.isAnyOverlap(Input.getGlobalMousePosition().clone().add(new Vec2(16, 16)))) {
-                this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: 'SPACE OCCUPIED'});
+        if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().x < 1388) {
+            const clickColRow = this.floor.getColRowAt(Input.getGlobalMousePosition().clone().add(new Vec2(16, 16)));
+            if (this.isAnyOverlap(clickColRow.clone())) {
+                this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'SPACE OCCUPIED' });
                 return;
             }
-            this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: ''})
             switch (this.placingMode) {
                 case "WALL":
-                    this.placeWall(Input.getGlobalMousePressPosition().clone());
+                    this.placeWall(clickColRow);
                     break;
                 case "TRAP":
+                    this.placeTrap(clickColRow, TRAP_TYPE.FROST);
                     break;
                 case "TURRET":
-                    this.placeTurret(Input.getGlobalMousePressPosition().clone());
+                    this.placeTurret(clickColRow);
                     break;
                 case "ENEMY":
-                    this.placeEnemey(Input.getGlobalMousePressPosition().clone());
+                    this.placeEnemey(clickColRow);
             }
         }
         else if (Input.isMouseJustPressed(0)) {
             const clickPos = Input.getGlobalMousePressPosition().clone()
-            console.log(clickPos);
             if (clickPos.x < 1500 && clickPos.x > 1410) {
                 if (clickPos.y < 270 && clickPos.y > 170) {
                     console.log("1,1 SLOT1");
@@ -225,11 +242,18 @@ export default class xeno_level extends Scene {
                 }
             }
         }
+
+        if (Input.isMouseJustPressed(2)) {
+            const clickColRow = this.floor.getColRowAt(Input.getGlobalMousePressPosition().clone().add(new Vec2(16, 16)));
+            const wall = this.aliveWalls.filter((e) => {
+                return this.floor.getColRowAt(e.position).equals(clickColRow);
+            })
+            if (!wall) return;
+            this.updateNeighbors(wall[0]);
+        }
     }
 
-    isAnyOverlap(position: Vec2): boolean {
-        const tilePosition = this.floor.getColRowAt(position);
-        console.log(this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)));
+    isAnyOverlap(tilePosition: Vec2): boolean {
         return this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveTraps.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
@@ -237,58 +261,63 @@ export default class xeno_level extends Scene {
     }
 
 
-    placeTrap(position: Vec2, type: TRAP_TYPE) {
+    placeTrap(tilePosition: Vec2, type: TRAP_TYPE) {
         let trap: AnimatedSprite = this.deadTraps.pop();
-
         if (!trap) {
             trap = this.add.animatedSprite('traps', 'primary');
-            trap.setCollisionShape(new AABB(Vec2.ZERO, trap.sizeWithZoom));
+            let effectData: EffectData = {
+                slow: {
+                    duration: 2000,
+                    percent: 0.4,
+                }
+            }
+            trap.addAI(TrapAI, {
+                effectData: effectData,
+                battleManager: this.battleManager
+            })
         }
         trap.animation.playIfNotAlready('BRONZE_FROST', true);
-        trap.position = this.floor.getColRowAt(position.add(new Vec2(16, 16))).mult(new Vec2(32, 32));
-
+        trap.position = tilePosition.mult(new Vec2(32, 32));
         trap.visible = true;
+        trap.addPhysics(undefined, undefined, false, true);
+        trap.setGroup(XENO_ACTOR_TYPE.TRAP);
+        trap.setTrigger(XENO_ACTOR_TYPE.ENEMY, XENO_EVENTS.TRIGGER_TRAP, null);
         this.aliveTraps.push(trap);
+
     }
 
-    placebase(position:Vec2){
+    placeBase(position: Vec2) {
         let base: AnimatedSprite;
         base = this.add.animatedSprite('base', 'primary');
-        base.addAI(WallAI, {}); 
+        base.addAI(BaseAI, {
+            health: 1 << 30,
+            armor: 0
+        });
         base.setCollisionShape(new AABB(Vec2.ZERO, base.sizeWithZoom));
         const currColRow = this.floor.getColRowAt(position);
-        base.ai.initializeAI(base, {
-            leftTile: null,
-            rightTile: null,
-            botTile: null,
-            topTile: null
-        });
-        (base.ai as WallAI).health = 1 << 30;
 
         base.position = currColRow.clone().mult(new Vec2(32, 32));
         base.visible = true;
         base.addPhysics();
-        this.aliveWalls.push(base);
+        this.base = base;
         base.animation.play("IDLE", true);
     }
 
-    placeWall(position: Vec2) {
+    placeWall(tilePosition: Vec2) {
         let wall: AnimatedSprite = this.deadWalls.pop();
-        console.log(this.aliveWalls);
+
 
         if (!wall) {
             wall = this.add.animatedSprite('walls', 'primary');
-            wall.addAI(WallAI, {}); 
+            wall.addAI(WallAI, {});
             wall.setCollisionShape(new AABB(Vec2.ZERO, wall.sizeWithZoom));
         }
 
         let leftTile: AnimatedSprite = null, rightTile: AnimatedSprite = null, topTile: AnimatedSprite = null, botTile: AnimatedSprite = null;
-        position.add(new Vec2(16, 16));
-        const currColRow = this.floor.getColRowAt(position);
-        const leftTileColRow = currColRow.clone().add(new Vec2(-1, 0));
-        const rightTileColRow = currColRow.clone().add(new Vec2(1, 0));
-        const botTileColRow = currColRow.clone().add(new Vec2(0, 1));
-        const topTileColRow = currColRow.clone().add(new Vec2(0, -1));
+        const leftTileColRow = tilePosition.clone().add(new Vec2(-1, 0));
+        const rightTileColRow = tilePosition.clone().add(new Vec2(1, 0));
+        const botTileColRow = tilePosition.clone().add(new Vec2(0, 1));
+        const topTileColRow = tilePosition.clone().add(new Vec2(0, -1));
 
         this.aliveWalls.forEach((w) => {
             if (this.floor.getColRowAt(w.position).equals(leftTileColRow)) {
@@ -320,59 +349,63 @@ export default class xeno_level extends Scene {
             topTile: topTile
         })
 
-        wall.position = currColRow.clone().mult(new Vec2(32, 32));
+        wall.position = tilePosition.mult(new Vec2(32, 32));
         wall.visible = true;
         wall.addPhysics();
         this.aliveWalls.push(wall);
     }
 
-    placeTurret(position: Vec2) {
+    placeTurret(tilePosition: Vec2) {
         let turret = this.deadTurrets.pop();
-        const currColRow = this.floor.getColRowAt(position.add(new Vec2(16, 16)));
 
         if (!turret) {
             turret = this.add.animatedSprite("turret", "primary");
             turret.addAI(TurretAI, { battleManager: this.battleManager });
         }
-        turret.position = currColRow.clone().mult(new Vec2(32, 32));
+        turret.position = tilePosition.mult(new Vec2(32, 32));
         turret.visible = true;
         turret.addPhysics();
         this.aliveTurrets.push(turret);
     }
 
-    placeEnemey(position: Vec2) {
+    placeEnemey(tilePosition: Vec2) {
         let enemy = this.deadEnemies.pop();
-        const currColRow = this.floor.getColRowAt(position.add(new Vec2(16, 16)));
-
         if (!enemy) {
             enemy = this.add.animatedSprite("UMA", "primary");
-            enemy.addAI(EnemyAI, { health: 30, BasePos: new Vec2(672,352),SpawnPos:currColRow.clone().mult(new Vec2(32, 32)), aliveWalls: this.aliveWalls, aliveTurrets: this.aliveTurrets, floor: this.floor, battleManager: this.battleManager });
+            enemy.addAI(EnemyAI, {
+                health: 30,
+                BasePos: new Vec2(672, 352),
+                SpawnPos: tilePosition.clone().mult(new Vec2(32, 32)),
+                level: this,
+                battleManager: this.battleManager
+            });
         }
-        (enemy.ai as BattlerAI).health = 30; 
-        enemy.setAIActive(true, {});
         enemy.animation.playIfNotAlready("IDLE", true);
-        enemy.position = currColRow.clone().mult(new Vec2(32, 32));
+        enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
         enemy.addPhysics();
+        enemy.setGroup(XENO_ACTOR_TYPE.ENEMY);
+        enemy.setAIActive(true, {});
         this.aliveEnemies.push(enemy);
     }
 
     updateNeighbors(wall: AnimatedSprite) {
         const wallAI = wall.ai as WallAI;
+        console.log(wallAI.neighboringWall);
         wallAI.neighboringWall.forEach((w, i) => {
             if (w) {
                 let dir = 0;
-                switch(i) {
+                switch (i) {
                     case NEIGHBOR.LEFT:
-                    case NEIGHBOR.BOT:
+                    case NEIGHBOR.TOP:
                         dir = i + 1;
                         break;
-                    case NEIGHBOR.TOP:
+                    case NEIGHBOR.BOT:
                     case NEIGHBOR.RIGHT:
                         dir = i - 1;
                         break;
                 }
-                (w.ai as WallAI).delNeighbor(dir);  
+                (w.ai as WallAI).delNeighbor(dir);
             }
         })
 
@@ -386,6 +419,25 @@ export default class xeno_level extends Scene {
                 return (this.aliveEnemies[i].ai as BattlerAI);
             }
         }
+    }
+
+    findFriendAtColRow(colRow: Vec2): BattlerAI | undefined {
+        if (this.floor.getColRowAt(this.base.position).equals(colRow))
+            return this.base.ai as BattlerAI;
+        for (let i = 0; i < this.aliveTurrets.length; i++) {
+            const curr = this.aliveTurrets[i];
+            if (this.floor.getColRowAt(curr.position).equals(colRow))
+                return curr.ai as BattlerAI;
+        }
+        for (let i = 0; i < this.aliveWalls.length; i++) {
+            const curr = this.aliveWalls[i];
+            if (this.floor.getColRowAt(curr.position).equals(colRow))
+                return curr.ai as BattlerAI;
+        }
+    }
+
+    getFloor() {
+        return this.floor;
     }
 
 }

@@ -27,6 +27,7 @@ export enum XENO_EVENTS {
     TURRET_DIED = "TURRET_DIED",
     GAME_OVER = "GAME_OVER",
     EFFECT_END = "EFFECT_END",
+    TRIGGER_TRAP = "TRIGGER_TRAP",
     UPGRADE = "UPGRADE"
 }
 
@@ -36,8 +37,16 @@ export enum XENO_EFFECT_TYPE {
     ACID_EFFECT = "ACID_EFFECT"
 }
 
-export enum XENO_ATKER_TYPE {
+export enum XENO_ACTOR_TYPE {
     FRIEND = "FRINED",
-    ENEMY = "ENEMY"
+    ENEMY = "ENEMY",
+    TRAP = "TRAP"
 }
 
+export const XENO_LEVEL_PHYSICS_OPTIONS = {
+    groupNames: [XENO_ACTOR_TYPE.TRAP, XENO_ACTOR_TYPE.ENEMY],
+    collisions: [
+        [0, 1],
+        [1, 0]
+    ]
+}

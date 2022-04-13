@@ -10404,10 +10404,10 @@ const ActiveGrey = new Color_1.default(229, 229, 229);
 class MainMenu extends Scene_1.default {
     loadScene() {
         this.load.image("background", "xeno_assets/images/background.png");
-        this.load.image("leftclick", "xeno_assets/images/light/Mouse_Left_key_Light.png");
-        this.load.image("ESC", "xeno_assets/images/Light/Esc_Key_Light.png");
-        this.load.image("semicolon", "xeno_assets/images/Light/Semicolon_Key_Light.png");
-        this.load.image("quote", "xeno_assets/images/Light/Quote_Key_Light.png");
+        this.load.image("leftclick", "xeno_assets/images/light/Mouse_Left_Key_Light.png");
+        this.load.image("ESC", "xeno_assets/images/light/Esc_Key_Light.png");
+        this.load.image("semicolon", "xeno_assets/images/light/Semicolon_Key_Light.png");
+        this.load.image("quote", "xeno_assets/images/light/Quote_Key_Light.png");
     }
     startScene() {
         const center = this.viewport.getCenter();
@@ -10640,7 +10640,7 @@ class xeno_level extends Scene_1.default {
         this.load.spritesheet("base", "xeno_assets/spritesheets/Generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-        this.load.spritesheet("turret", "xeno_assets/spritesheets/Turret_simple.json");
+        this.load.spritesheet("turret", "xeno_assets/spritesheets/turret_simple.json");
         this.load.spritesheet("UMA", "xeno_assets/spritesheets/UMA.json");
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json");
         this.load.image("Drawing", "xeno_assets/images/Drawing.png");

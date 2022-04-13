@@ -4,7 +4,7 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
-import { CANVAS_SIZE } from "../constants";
+import { CANVAS_SIZE, XENO_LEVEL_PHYSICS_OPTIONS } from "../constants";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import xeno_level from "./xeno_level";
 
@@ -24,7 +24,7 @@ export default class MainMenu extends Scene {
         this.load.image("leftclick", "xeno_assets/images/light/mouse_left_key_light.png")
         this.load.image("ESC", "xeno_assets/images/light/esc_key_light.png")
         this.load.image("semicolon", "xeno_assets/images/light/semicolon_key_light.png")
-        this.load.image("quote", "xeno_assets/images/light/quote_ley_light.png")
+        this.load.image("quote", "xeno_assets/images/light/quote_key_light.png")
     }
 
     startScene() {
@@ -194,24 +194,27 @@ export default class MainMenu extends Scene {
 
             switch(event.type) {
                 case "main":
-                    this.switchScene('main')
+                    this.switchLayer('main')
                     break;
                 case "chapter":
-                    this.switchScene('chapter')
+                    this.switchLayer('chapter')
                     break;
                 case "control":
-                    this.switchScene('control')
+                    this.switchLayer('control')
                     break;
                 case "help":
-                    this.switchScene('help')
+                    this.switchLayer('help')
                     break;
                 case "chapter1_1":
-                    this.sceneManager.changeToScene(xeno_level); 
+                    const sceneOptions = {
+                        physics: XENO_LEVEL_PHYSICS_OPTIONS
+                    }
+                    this.sceneManager.changeToScene(xeno_level, {}, sceneOptions); 
             }
         }
     }
 
-    switchScene(name: string) {
+    switchLayer(name: string) {
         const names = ['main', 'control', 'help', 'chapter'];
         names.forEach((e) => {
             if (e === name) {

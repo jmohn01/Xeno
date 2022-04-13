@@ -2,7 +2,7 @@ import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import BattlerAI from "../AI/BattlerAI";
-import { XENO_ATKER_TYPE } from "../constants";
+import { XENO_ACTOR_TYPE } from "../constants";
 import { EffectData } from "./Attack/internal";
 import { AcidEffect } from "./Effect/AcidEffect";
 import { Effect } from "./Effect/Effect";
@@ -11,19 +11,27 @@ import { SlowEffect } from "./Effect/SlowEffect";
 
 export default class BattleManager {
 
-    turrets: Array<AnimatedSprite>
-    walls: Array<AnimatedSprite>
-    enemies: Array<AnimatedSprite>
+    private base: AnimatedSprite
+    private turrets: Array<AnimatedSprite>
+    private walls: Array<AnimatedSprite>
+    private enemies: Array<AnimatedSprite>
+
+    constructor(turrets: Array<AnimatedSprite>, walls: Array<AnimatedSprite>, base: AnimatedSprite, enemies: Array<AnimatedSprite>) {
+        this.turrets = turrets;
+        this.walls = walls;
+        this.enemies = enemies;
+        this.base = base;
+    }
 
     handlePointAtk(to: BattlerAI, dmg: number, effects: EffectData) {
         to.damage(dmg);
         BattleManager.addEffects(effects, to);
     }
 
-    handleAOEAtk(from: Vec2, r: number, dmg: number, effects: EffectData, atkerType: XENO_ATKER_TYPE) {
+    handleAOEAtk(from: Vec2, r: number, dmg: number, effects: EffectData, atkerType: XENO_ACTOR_TYPE) {
         const r2 = r * r;
         switch (atkerType) {
-            case XENO_ATKER_TYPE.ENEMY:
+            case XENO_ACTOR_TYPE.ENEMY:
                 this.turrets
                     .filter((t) => from.distanceSqTo(t.position) <= r2)
                     .forEach((t) => {
@@ -39,11 +47,12 @@ export default class BattleManager {
                         BattleManager.addEffects(effects, target);
                     })
                 break;
-            case XENO_ATKER_TYPE.FRIEND:
+            case XENO_ACTOR_TYPE.FRIEND:
                 this.enemies
                     .filter((e) => from.distanceSqTo(e.position) <= r2)
                     .forEach((e) => {
                         const target = e.ai as BattlerAI;
+                        console.log("HIT: ", target);
                         target.damage(dmg);
                         BattleManager.addEffects(effects, target);
                     })

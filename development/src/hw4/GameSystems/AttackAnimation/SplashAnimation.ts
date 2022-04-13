@@ -32,9 +32,11 @@ export class SplashAnimation extends AtkAnimation {
 
     doAnimation(from: Vec2, r: number, lines: Line[]): void {
 
+        console.log(r);
+
         for (let i = 0; i < 8; i++) {
             lines[i].start = from;
-            lines[i].end = from.clone().add(circleDir[i]);
+            lines[i].end = from.clone().add((circleDir[i]).clone().mult(new Vec2(r, r)));
             lines[i].tweens.play("fade");
         }
 

@@ -28,7 +28,7 @@ export class AcidEffect extends Effect<AcidEffect> {
 
     endEffect(): void {
         this.target.armor += this.reduction;
-        this.emitter.fireEvent(XENO_EVENTS.EFFECT_END, {id: this.id, owner: this.target})
+        this.target.removeEffect(this.id);
     }
 
     refreshEffect(): void {

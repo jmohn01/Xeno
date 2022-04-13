@@ -13,8 +13,6 @@ export abstract class Effect<T> {
     target: BattlerAI; 
 
     type: XENO_EFFECT_TYPE;
-    
-    protected emitter: Emitter = new Emitter();
 
     abstract applyEffect(): void;
 

@@ -5,6 +5,7 @@ import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Color from "../../Wolfie2D/Utils/Color";
+import { XENO_EVENTS } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
@@ -16,24 +17,25 @@ import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
     level: xeno_level;
-
+    
     armor: number;
-
+    
     range: number = 300;
-
+    
     speed: number;
-
+    
     owner: AnimatedSprite;
-
+    
     health: number;
-
+    
     target: BattlerAI;
-
-    effects: Effect<any>[];
-
+    
+    effects: Effect<any>[] = [];
+    
     atkEffect: EffectData;
-
+    
     emitter: Emitter = new Emitter();
+
 
     atk: PointAttack;
 
@@ -43,7 +45,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent("turretDied", { owner: this.owner });
+            this.emitter.fireEvent(XENO_EVENTS.TURRET_DIED, { owner: this.owner });
         }
     }
 
@@ -63,7 +65,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     handleEvent(event: GameEvent): void {
-
+        
     }
 
     update(deltaT: number): void {

@@ -10,28 +10,32 @@ export class SlowEffect extends Effect<SlowEffect> {
 
     type: XENO_EFFECT_TYPE = XENO_EFFECT_TYPE.SLOW_EFFECT;
     
+    target: BattlerAI;
+
     private percent: number; 
 
-    private dotTimer: Timer; 
-
     private durationTimer: Timer; 
+
 
 
     constructor(duration: number, percent: number, target: BattlerAI) {
         super(); 
         this.target = target;
-        this.durationTimer = new Timer(duration, this.dotTimer.pause); 
+        this.percent = percent;
+        this.durationTimer = new Timer(duration, this.endEffect); 
     }
 
     applyEffect(): void { 
         this.target.speed *= this.percent;
+        console.log(this.target.speed);
         this.durationTimer.start();
     }
 
-    endEffect(): void {
+    endEffect = () => {
         this.target.speed /= this.percent;
+        console.log(this.target.speed);
         this.durationTimer.pause(); 
-        this.emitter.fireEvent(XENO_EVENTS.EFFECT_END, {id: this.id, owner: this.target});
+        this.target.removeEffect(this.id);
     }
 
     refreshEffect(): void {
