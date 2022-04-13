@@ -40,6 +40,9 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     atk: PointAttack;
 
     damage(damage: number) {
+        if (this.health <= 0) {
+            return;
+        }
         this.health -= damage;
         if (this.health <= 0) {
             this.owner.setAIActive(false, {});

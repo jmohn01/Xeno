@@ -21,7 +21,7 @@ export default class EnemyAI implements BattlerAI {
 
     atk: PointAttack;
 
-    armor: number;
+    armor: number = 0;
 
     effects: Effect<any>[] = [];
 
@@ -77,7 +77,12 @@ export default class EnemyAI implements BattlerAI {
     activate(options: Record<string, any>): void { }
 
     damage(damage: number): void {
+        if (this.health <= 0) {
+            return;
+        }
+
         this.health -= damage;
+        
         if (this.health <= 0) {
             this.effects.forEach((e) => {
                 e.endEffect();
@@ -165,10 +170,12 @@ export default class EnemyAI implements BattlerAI {
         }
         this.effects.push(effect);
         effect.applyEffect();
+        console.log("ENEEMY AI: %d, ARMOR: %d", this.owner.id, this.armor);
     }
 
     removeEffect(id: number): void {
         this.effects = this.effects.filter((e) => e.id !== id);
+        console.log("ENEEMY AI: %d, ARMOR: %d", this.owner.id, this.armor);
     }
 
     destroy(): void {

@@ -41,6 +41,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
 
     damage(damage: number): void {
+        if (this.health <= 0) {
+            return;
+        }
+        
         this.health -= damage; 
 
         if (this.health <= 0) {

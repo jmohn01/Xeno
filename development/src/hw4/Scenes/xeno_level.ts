@@ -271,10 +271,14 @@ export default class xeno_level extends Scene {
                 //     duration: 2000,
                 //     percent: 0.4,
                 // },
-                fire: {
+                // fire: {
+                //     duration: 2000,
+                //     ticks: 5,
+                //     damage: 10
+                // }
+                acid: {
                     duration: 2000,
-                    ticks: 5,
-                    damage: 10
+                    reduction: 5
                 }
             }
             trap.addAI(TrapAI, {

@@ -26,7 +26,8 @@ export class AcidEffect extends Effect<AcidEffect> {
         this.durationTimer.start();
     }
 
-    endEffect(): void {
+    endEffect = (): void => {
+        this.durationTimer.pause(); 
         this.target.armor += this.reduction;
         this.target.removeEffect(this.id);
     }

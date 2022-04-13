@@ -24,7 +24,6 @@ export default class BattleManager {
     }
 
     handleAOEAtk(from: Vec2, r: number, dmg: number, effects: EffectData, atkerType: XENO_ACTOR_TYPE) {
-        const r2 = r * r;
         let targets: BattlerAI[];
         switch (atkerType) {
             case XENO_ACTOR_TYPE.ENEMY:
