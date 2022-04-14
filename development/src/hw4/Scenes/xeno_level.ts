@@ -289,19 +289,7 @@ export default class xeno_level extends Scene {
             return;
         }
         this.errorLabel.setText('');
-        switch (this.placingMode) {
-            case "WALL":
-                this.placeWall(clickColRow);
-                break;
-            case "TRAP":
-                this.placeTrap(clickColRow, TRAP_TYPE.FROST);
-                break;
-            case "TURRET":
-                this.placeTurret(clickColRow);
-                break;
-            case "ENEMY":
-                this.placeEnemey(clickColRow);
-        }
+        
     }
 
     rightMenuClick(clickPos: Vec2) {
@@ -461,7 +449,7 @@ export default class xeno_level extends Scene {
         this.aliveWalls.push(wall);
     }
 
-    placeTurret(tilePosition: Vec2) {
+    placeTurret(tilePosition: Vec2, turretType: TURRET_TYPE) {
         let turret = this.deadTurrets.pop();
 
         if (!turret) {

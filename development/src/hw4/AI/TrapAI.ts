@@ -7,11 +7,13 @@ import { XENO_ACTOR_TYPE } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import { SplashAnimation } from "../GameSystems/AttackAnimation/SplashAnimation";
+import { Grade } from "../type";
 import Upgradeable from "./Upgradable";
 
 export default class TrapAI implements AI, Upgradeable {
     owner: AnimatedSprite
     atk: AOEAttack;
+    grade: Grade
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
