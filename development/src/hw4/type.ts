@@ -1,0 +1,1 @@
+export type Grade = 'BRONZE' | 'SILVER' | 'GOLD'

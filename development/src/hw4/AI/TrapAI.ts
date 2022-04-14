@@ -12,16 +12,11 @@ import Upgradeable from "./Upgradable";
 export default class TrapAI implements AI, Upgradeable {
     owner: AnimatedSprite
     atk: AOEAttack;
-    atkEffect: EffectData
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        this.atkEffect = options.effectData;
-        if (options.damage) {
-            this.atk = new AOEAttack(options.damage, 100, 3000, new SplashAnimation(Color.BLUE), this.atkEffect, options.battleManager);
-        } else {
-            this.atk = new AOEAttack(0, 100, 3000, new SplashAnimation(Color.BLUE), this.atkEffect, options.battleManager);
-        }
+        const { color, damage, range, cooldown, atkEffect, battleManager } = options;
+        this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(color), atkEffect, battleManager);
     }
 
     attack(): void {

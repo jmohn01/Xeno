@@ -71,7 +71,10 @@ export default class xeno_level extends Scene {
     private trapData: Object;
 
     private wallData: Object;
-    
+
+    private turretData: Object;
+
+    private enemyData: Object;
 
     /* ------------------------------- UI ELEMENTS ------------------------------ */
 
@@ -87,7 +90,6 @@ export default class xeno_level extends Scene {
 
 
     loadScene(): void {
-
         this.load.tilemap("level", "xeno_assets/map/test_map.json");
         this.load.spritesheet("base", "xeno_assets/spritesheets/generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
@@ -97,15 +99,16 @@ export default class xeno_level extends Scene {
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json")
         this.load.spritesheet("highlight", "xeno_assets/spritesheets/highlight.json");
         this.load.image("ingame_ui", "xeno_assets/images/ingame_ui.png");
-        this.load.object("traps_init", "xeno_assets/data/traps_data.json");
-
+        this.load.object("trapData", "xeno_assets/data/trap_data.json");
+        this.load.object("turretData", "xeno_assets/data/turret_data.json");
+        this.load.object("wallData", "xeno_assets/data/wall_data.json");
+        this.load.object("enemyData", "xeno_assets/data/enemy_data.json");
     }
 
     startScene(): void {
 
-
         this.initUI();
-
+        this.initData();
 
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
 
@@ -118,8 +121,6 @@ export default class xeno_level extends Scene {
         this.placeBase(new Vec2(672, 352));
 
         this.battleManager = new BattleManager(this);
-
-        this.viewport.setZoomLevel(1);
 
         this.receiver.subscribe([
             XENO_EVENTS.WALL_DIED,
@@ -154,6 +155,14 @@ export default class xeno_level extends Scene {
 
         this.selectionHighlight = this.add.animatedSprite("highlight", "UI");
         this.selectionHighlight.animation.playIfNotAlready("IDLE", true);
+    }
+
+    initData() {
+        this.trapData = this.load.getObject('trapData');
+        this.turretData = this.load.getObject('turretData');
+        this.wallData = this.load.getObject('wallData');
+        this.enemyData = this.load.getObject('enemyData');
+        console.log(this.trapData, this.turretData, this.wallData, this.enemyData);
     }
 
     handleEvent(event: GameEvent) {
