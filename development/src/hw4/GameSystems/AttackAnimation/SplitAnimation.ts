@@ -2,25 +2,14 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import { TweenableProperties } from "../../../Wolfie2D/Nodes/GameNode";
 import { GraphicType } from "../../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Line from "../../../Wolfie2D/Nodes/Graphics/Line";
-import Point from "../../../Wolfie2D/Nodes/Graphics/Point";
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Color from "../../../Wolfie2D/Utils/Color";
 import { EaseFunctionType } from "../../../Wolfie2D/Utils/EaseFunctions";
+import BattlerAI from "../../AI/BattlerAI";
 import { XENO_EVENTS } from "../../constants";
 import AtkAnimation from "./AtkAnimation";
 
-const circleDir = [
-    Vec2.DOWN,
-    Vec2.UP,
-    Vec2.LEFT,
-    Vec2.RIGHT,
-    new Vec2(Math.sqrt(2) / 2, Math.sqrt(2) / 2),
-    new Vec2(-Math.sqrt(2) / 2, Math.sqrt(2) / 2),
-    new Vec2(-Math.sqrt(2) / 2, -Math.sqrt(2) / 2),
-    new Vec2(Math.sqrt(2) / 2, -Math.sqrt(2) / 2)
-]
-
-export class SplashAnimation extends AtkAnimation {
+export class SplitAnimation extends AtkAnimation {
 
 
     private color: Color;
@@ -30,19 +19,20 @@ export class SplashAnimation extends AtkAnimation {
         this.color = color;
     }
 
-    doAnimation(from: Vec2, r: number, lines: Line[]): void {
-        for (let i = 0; i < 8; i++) {
-            lines[i].start = from;
-            lines[i].end = from.clone().add((circleDir[i]).clone().mult(new Vec2(r, r)));
-            lines[i].tweens.play("fade");
+    doAnimation(from: Vec2, targets: BattlerAI[], assets: Line[]): void {
+        for (let i = 0; i < targets.length; i++) {
+            assets[i].start = from.clone();
+            assets[i].end = targets[i].owner.position.clone();
+            assets[i].tweens.play("fade"); 
         }
     }
 
-    createRequiredAssets(scene: Scene): Line[] {
-        let lines: Line[] = [];
-        for (let i = 0; i < 8; i++) {
+    createRequiredAssets(scene: Scene, count: number): Line[] {
+        let res: Line[] = []; 
+        for (let i = 0; i < count; i++) {
             let line = <Line>scene.add.graphic(GraphicType.LINE, "primary", { start: new Vec2(-1, 1), end: new Vec2(-1, -1) });
             line.color = this.color;
+
             line.tweens.add("fade", {
                 startDelay: 0,
                 duration: 300,
@@ -56,14 +46,17 @@ export class SplashAnimation extends AtkAnimation {
                 ],
                 onEnd: XENO_EVENTS.UNLOAD_ASSET
             });
-            lines.push(line);
+            res.push(line); 
         }
 
-        return lines;
+
+        return res;
     }
 
+
+
     clone(): AtkAnimation {
-        return new SplashAnimation(this.color);
+        return new SplitAnimation(this.color);
     }
 
 }

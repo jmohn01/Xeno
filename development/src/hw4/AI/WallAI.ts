@@ -59,12 +59,14 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        this.health = 100; 
-        this.type = WALL_TYPE.DIRT
-        this.neighboringWall[NEIGHBOR.LEFT] = options.leftTile;
-        this.neighboringWall[NEIGHBOR.RIGHT] = options.rightTile;
-        this.neighboringWall[NEIGHBOR.TOP] = options.topTile;
-        this.neighboringWall[NEIGHBOR.BOT] = options.botTile;
+        const { health, armor, type, leftTile, rightTile, botTile, topTile } = options;
+        this.health = health; 
+        this.armor = armor;
+        this.type = type;
+        this.neighboringWall[NEIGHBOR.LEFT] = leftTile;
+        this.neighboringWall[NEIGHBOR.RIGHT] = rightTile;
+        this.neighboringWall[NEIGHBOR.TOP] = topTile;
+        this.neighboringWall[NEIGHBOR.BOT] = botTile;
         this.neighborNum = this.neighboringWall.filter((e) => !!e).length;
         this.updateShape(); 
         this.receiver.subscribe([

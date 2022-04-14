@@ -7,22 +7,28 @@ import { XENO_ACTOR_TYPE } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import { SplashAnimation } from "../GameSystems/AttackAnimation/SplashAnimation";
+import xeno_level from "../Scenes/xeno_level";
 import { Grade } from "../type";
 import Upgradeable from "./Upgradable";
 
 export default class TrapAI implements AI, Upgradeable {
     owner: AnimatedSprite
     atk: AOEAttack;
-    grade: Grade
+    grade: Grade;
+    level: xeno_level;
+    range: number; 
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { color, damage, range, cooldown, atkEffect, battleManager } = options;
+        const { color, damage, range, cooldown, atkEffect, level, battleManager } = options;
+        this.level = level;
         this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(color), atkEffect, battleManager);
     }
 
     attack(): void {
-        this.atk.attack(this, XENO_ACTOR_TYPE.FRIEND);
+        const targets = this.level.findEnemiesInRange(this.owner.position, this.range); 
+        if (targets)
+            this.atk.attack(this.owner.position, targets, this.owner.getScene());
     }
 
     destroy(): void {

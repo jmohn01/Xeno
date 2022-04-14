@@ -25,25 +25,30 @@ export class BulletAnimation extends AtkAnimation {
         line.tweens.play("fade");
     }
 
-    createRequiredAssets(scene: Scene): Line[] {
-        let line = <Line>scene.add.graphic(GraphicType.LINE, "primary", { start: new Vec2(-1, 1), end: new Vec2(-1, -1) });
-        line.color = this.color;
+    createRequiredAssets(scene: Scene, count: number): Line[] {
+        let res: Line[] = []; 
+        for (let i = 0; i < count; i++) {
+            let line = <Line>scene.add.graphic(GraphicType.LINE, "primary", { start: new Vec2(-1, 1), end: new Vec2(-1, -1) });
+            line.color = this.color;
 
-        line.tweens.add("fade", {
-            startDelay: 0,
-            duration: 300,
-            effects: [
-                {
-                    property: TweenableProperties.alpha,
-                    start: 1,
-                    end: 0,
-                    ease: EaseFunctionType.OUT_SINE
-                }
-            ],
-            onEnd: XENO_EVENTS.UNLOAD_ASSET
-        });
+            line.tweens.add("fade", {
+                startDelay: 0,
+                duration: 300,
+                effects: [
+                    {
+                        property: TweenableProperties.alpha,
+                        start: 1,
+                        end: 0,
+                        ease: EaseFunctionType.OUT_SINE
+                    }
+                ],
+                onEnd: XENO_EVENTS.UNLOAD_ASSET
+            });
+            res.push(line); 
+        }
 
-        return [line];
+
+        return res;
     }
 
 

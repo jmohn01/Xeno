@@ -23,19 +23,11 @@ export default class BattleManager {
         BattleManager.addEffects(effects, to);
     }
 
-    handleAOEAtk(from: Vec2, r: number, dmg: number, effects: EffectData, atkerType: XENO_ACTOR_TYPE) {
+    handleAOEAtk(to: BattlerAI[], dmg: number, effects: EffectData) {
         let targets: BattlerAI[];
-        switch (atkerType) {
-            case XENO_ACTOR_TYPE.ENEMY:
-                targets = this.level.findFriendsInRange(from, r);
-                break;
-            case XENO_ACTOR_TYPE.FRIEND:
-                targets = this.level.findEnemiesInRange(from, r);
-                break;
-        }
-        targets.forEach((e) => {
-            BattleManager.addEffects(effects, e);
+        to.forEach((e) => {
             e.damage(dmg);
+            BattleManager.addEffects(effects, e);
         })
     }
 

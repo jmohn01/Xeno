@@ -96,6 +96,7 @@
         "BRONZE": {
             "atkType": "AOEAtk",
             "color": "#FFDA00",
+            "explosionRange": 32,
             "range": 100,
             "damage": 10,
             "cooldown": 1000,
@@ -104,7 +105,9 @@
             "atkEffect": {}
         },
         "SILVER": {
+            "atkType": "AOEAtk",
             "color": "#FFDA00",
+            "explosionRange": 32,
             "range": 100,
             "cooldown": 1000,
             "damage": 20,
@@ -113,7 +116,9 @@
             "atkEffect": {}
         },
         "GOLD": {
+            "atkType": "AOEAtk",
             "color": "#FF8000",
+            "explosionRange": 32,
             "range": 200,
             "cooldown": 1000,
             "damage": 20,

@@ -1,9 +1,13 @@
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../../Wolfie2D/Events/Emitter";
+import Scene from "../../../Wolfie2D/Scene/Scene";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
 import TrapAI from "../../AI/TrapAI";
 import { XENO_ACTOR_TYPE } from "../../constants";
 import AtkAnimation from "../AttackAnimation/AtkAnimation";
+import { SplashAnimation } from "../AttackAnimation/SplashAnimation";
+import { SplitAnimation } from "../AttackAnimation/SplitAnimation";
 import BattleManager from "../BattleManager";
 import { EffectData } from "./internal";
 
@@ -32,16 +36,20 @@ export default class AOEAttack {
         this.battleManager = bm; 
     }
 
-    attack(from: BattlerAI | TrapAI, atkerType: XENO_ACTOR_TYPE): boolean {
+    attack(from: Vec2, targets: BattlerAI[], scene: Scene): boolean {
         if (!this.cooldownTimer.isStopped()) {
             return false;
         }
 
-        this.assets = this.atkAnimation.createRequiredAssets(from.owner.getScene()); 
+        this.assets = this.atkAnimation.createRequiredAssets(scene, targets.length); 
 
-        this.atkAnimation.doAnimation(from.owner.position, this.r, this.assets);
+        if (this.atkAnimation instanceof SplashAnimation) {
+            this.atkAnimation.doAnimation(from, this.r, this.assets); 
+        } else if (this.atkAnimation instanceof SplitAnimation) {
+            this.atkAnimation.doAnimation(from, targets, this.assets); 
+        }
 
-        this.battleManager.handleAOEAtk(from.owner.position, this.r, this.damage, this.effects, atkerType); 
+        this.battleManager.handleAOEAtk(targets, this.damage, this.effects); 
 
         this.cooldownTimer.start(); 
 

@@ -19,7 +19,7 @@ import EnemyAI from "../AI/EnemyAI";
 import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { CANVAS_SIZE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
+import { CANVAS_SIZE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
@@ -41,15 +41,11 @@ export default class xeno_level extends Scene {
         selected: null
     }
 
-    private placingMode: "WALL" | "TURRET" | "TRAP" | "ENEMY" = "WALL";
-
     private floor: OrthogonalTilemap;
 
     private base: AnimatedSprite;
 
     private deadWalls: Array<AnimatedSprite> = new Array();
-
-    private deadTraps: Array<AnimatedSprite> = new Array();
 
     private deadTurrets: Array<AnimatedSprite> = new Array();
 
@@ -162,7 +158,7 @@ export default class xeno_level extends Scene {
         this.turretData = this.load.getObject('turretData');
         this.wallData = this.load.getObject('wallData');
         this.enemyData = this.load.getObject('enemyData');
-        console.log(this.trapData, this.turretData, this.wallData, this.enemyData);
+        // @ts-ignore
     }
 
     handleEvent(event: GameEvent) {
@@ -210,27 +206,8 @@ export default class xeno_level extends Scene {
             this.handleEvent(event);
         }
 
-
-        if (Input.isKeyJustPressed('1')) {
-            this.placingMode = 'WALL';
-        }
-
-        if (Input.isKeyJustPressed('2')) {
-            this.placingMode = 'TURRET';
-        }
-
-
-        if (Input.isKeyJustPressed('3')) {
-            this.placingMode = 'ENEMY';
-        }
-
-        if (Input.isKeyJustPressed('4')) {
-            this.placingMode = 'TRAP';
-        }
-
         if (Input.isMouseJustPressed(0)) {
             const clickPos = Input.getGlobalMousePressPosition().clone();
-            console.log(clickPos);
 
             if (clickPos.x < UI_POSITIONS.RIGHT_UI_BORDER) {
                 if (clickPos.y > UI_POSITIONS.BOT_UI_BORDER) {
@@ -289,7 +266,27 @@ export default class xeno_level extends Scene {
             return;
         }
         this.errorLabel.setText('');
-        
+        switch(this.state.placing) {
+            case TRAP_TYPE.ACID:
+            case TRAP_TYPE.NET:
+            case TRAP_TYPE.FIRE:
+            case TRAP_TYPE.FROST:
+                this.placeTrap(clickColRow, this.state.placing);
+                break;
+            case TURRET_TYPE.BANK:
+            case TURRET_TYPE.BEAM:
+            case TURRET_TYPE.ELECTRIC:
+            case TURRET_TYPE.ROCKET:
+                this.placeTurret(clickColRow, this.state.placing);
+                break;
+            case 'WALL':
+                this.placeWall(clickColRow);
+                break;
+            case 'ENEMY':
+                this.placeEnemey(clickColRow);
+                break;
+        }
+
     }
 
     rightMenuClick(clickPos: Vec2) {
@@ -347,30 +344,14 @@ export default class xeno_level extends Scene {
 
 
     placeTrap(tilePosition: Vec2, type: TRAP_TYPE) {
-        let trap: AnimatedSprite = this.deadTraps.pop();
-        if (!trap) {
-            trap = this.add.animatedSprite('traps', 'primary');
-            let effectData: EffectData = {
-                // slow: {
-                //     duration: 2000,
-                //     percent: 0.4,
-                // },
-                // fire: {
-                //     duration: 2000,
-                //     ticks: 5,
-                //     damage: 10
-                // }
-                acid: {
-                    duration: 2000,
-                    reduction: 5
-                }
-            }
-            trap.addAI(TrapAI, {
-                effectData: effectData,
-                battleManager: this.battleManager
-            })
-        }
-        trap.animation.playIfNotAlready('BRONZE_FROST', true);
+        const trap = this.add.animatedSprite('traps', 'primary');
+        //@ts-ignore
+        trap.addAI(TrapAI, {
+            // @ts-ignore
+            ...this.trapData[type].BRONZE,
+            battleManager: this.battleManager
+        })
+        trap.animation.playIfNotAlready(`BRONZE_${TRAP_TYPE}`, true);
         trap.position = tilePosition.mult(new Vec2(32, 32));
         trap.visible = true;
         trap.addPhysics(undefined, undefined, false, true);
@@ -437,6 +418,9 @@ export default class xeno_level extends Scene {
         })
 
         wall.ai.initializeAI(wall, {
+            //@ts-ignore
+            ...this.wallData['DIRT'],
+            type: WALL_TYPE.DIRT,
             leftTile: leftTile,
             rightTile: rightTile,
             botTile: botTile,
@@ -449,12 +433,20 @@ export default class xeno_level extends Scene {
         this.aliveWalls.push(wall);
     }
 
-    placeTurret(tilePosition: Vec2, turretType: TURRET_TYPE) {
+    placeTurret(tilePosition: Vec2, type: TURRET_TYPE) {
         let turret = this.deadTurrets.pop();
 
         if (!turret) {
             turret = this.add.animatedSprite("turret", "primary");
-            turret.addAI(TurretAI, { battleManager: this.battleManager });
+            turret.addAI(
+                TurretAI, 
+                { 
+                    //@ts-ignore
+                    ...this.turretData[type].BRONZE, 
+                    level: this, 
+                    battleManager: this.battleManager,
+                    type: type
+                });
         }
         turret.position = tilePosition.mult(new Vec2(32, 32));
         turret.visible = true;

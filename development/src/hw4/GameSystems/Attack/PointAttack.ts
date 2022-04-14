@@ -40,7 +40,7 @@ export default class PointAttack {
         if (!this.cooldownTimer.isStopped()) {
             return false;
         }
-        this.assets = this.atkAnimation.createRequiredAssets(from.owner.getScene());
+        this.assets = this.atkAnimation.createRequiredAssets(from.owner.getScene(), 1);
 
         if (this.atkAnimation instanceof BulletAnimation) {
             this.atkAnimation.doAnimation(from.owner.position, to.owner.position, this.assets[0]);

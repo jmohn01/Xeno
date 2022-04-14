@@ -4,12 +4,14 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Timer from "../../Wolfie2D/Timing/Timer";
 import Color from "../../Wolfie2D/Utils/Color";
-import { XENO_EVENTS } from "../constants";
+import { TURRET_TYPE, XENO_ACTOR_TYPE, XENO_EVENTS } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
 import { BulletAnimation } from "../GameSystems/AttackAnimation/BulletAnimation";
+import { SplitAnimation } from "../GameSystems/AttackAnimation/SplitAnimation";
 import { Effect } from "../GameSystems/Effect/Effect";
 import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
@@ -17,27 +19,32 @@ import Upgradeable from "./Upgradable";
 
 export default class TurretAI implements BattlerAI, Upgradeable {
     level: xeno_level;
-    
+
     armor: number;
-    
+
     range: number = 300;
-    
+
     speed: number;
-    
+
     owner: AnimatedSprite;
-    
+
     health: number;
-    
+
     target: BattlerAI;
-    
+
     effects: Effect<any>[] = [];
-    
+
     atkEffect: EffectData;
-    
+
     emitter: Emitter = new Emitter();
 
+    type: TURRET_TYPE;
 
-    atk: PointAttack;
+    atk: PointAttack | AOEAttack;
+
+    bankTimer?: Timer;
+
+    explosionRange?: number;
 
     damage(damage: number) {
         if (this.health <= 0) {
@@ -54,9 +61,26 @@ export default class TurretAI implements BattlerAI, Upgradeable {
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        this.health = 20;
-        this.owner.animation.playIfNotAlready('IDLE', true);
-        this.atk = new PointAttack(10, 1000, new BulletAnimation(Color.YELLOW), {}, options.battleManager);
+        const { battleManager, armor, health, color, range, damage, cooldown, atkEffect, level, type } = options;
+        this.type = type;
+        switch (type) {
+            case TURRET_TYPE.BEAM:
+                this.atk = new PointAttack(damage, cooldown, new BulletAnimation(color), atkEffect, battleManager);
+                break;
+            case TURRET_TYPE.ROCKET:
+                const { explosionRange } = options;
+                this.atk = new AOEAttack(damage, explosionRange, cooldown, new SplitAnimation(color), atkEffect, battleManager);
+                break;
+            case TURRET_TYPE.ELECTRIC:
+                this.atk = new AOEAttack(damage, range, cooldown, new SplitAnimation(color), atkEffect, battleManager);
+                break;
+            case TURRET_TYPE.BANK:
+                this.bankTimer = new Timer(cooldown, () => { }, true);
+        }
+        this.armor = armor;
+        this.health = health;
+        this.range = range;
+        this.level = level;
     }
 
     destroy(): void {
@@ -68,15 +92,32 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     handleEvent(event: GameEvent): void {
-        
+
     }
 
     update(deltaT: number): void {
-        this.target = (this.owner.getScene() as xeno_level).findEnemyInRange(this.owner.position, this.range);
-        if (this.target) {
-            const lookDir = this.owner.position.dirTo(this.target.owner.position);
-            this.atk.attack(this, this.target);
-            this.owner.rotation = Vec2.UP.angleToCCW(lookDir);
+        switch (this.type) {
+            case TURRET_TYPE.BEAM: {
+                const target = this.level.findEnemyInRange(this.owner.position, this.range);
+                if (target)
+                    //@ts-ignore
+                    this.atk.attack(this, target, XENO_ACTOR_TYPE.FRIEND);
+            } break;
+
+            case TURRET_TYPE.ROCKET: {
+                const target = this.level.findEnemyInRange(this.owner.position, this.range);
+                if (target)
+                    //@ts-ignore
+                    this.atk.attack(target.owner.position, this.level.findEnemiesInRange(target.owner.position, this.explosionRange), this.owner.getScene());
+            } break;
+            case TURRET_TYPE.ELECTRIC: {
+                const pos = this.owner.position;
+                //@ts-ignore
+                this.atk.attack(pos, this.level.findEnemiesInRange(pos, this.range))
+            } break;
+            case TURRET_TYPE.BANK: {
+
+            } break;
         }
     }
 
