@@ -2,6 +2,8 @@ import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Input from "../../Wolfie2D/Input/Input";
+import Graphic from "../../Wolfie2D/Nodes/Graphic";
+import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
@@ -17,14 +19,27 @@ import EnemyAI from "../AI/EnemyAI";
 import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { TRAP_TYPE, XENO_ACTOR_TYPE, XENO_EVENTS } from "../constants";
+import { CANVAS_SIZE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
+import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
+import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
+import UIElement from "../../Wolfie2D/Nodes/UIElement";
 
-let idCounter = 0;
+export type PlayerState = {
+    placing: TRAP_TYPE | TURRET_TYPE | 'WALL' | 'ENEMY',
+    selected: BattlerAI
+}
+
+const PassiveGrey = new Color(196, 196, 196);
 
 
 export default class xeno_level extends Scene {
+
+    private state: PlayerState = {
+        placing: null,
+        selected: null
+    }
 
     private placingMode: "WALL" | "TURRET" | "TRAP" | "ENEMY" = "WALL";
 
@@ -52,7 +67,24 @@ export default class xeno_level extends Scene {
 
     private UI: Layer;
 
-    private errorLabel: Label
+    /* ------------------------------- ENTITY DATA ------------------------------ */
+    private trapData: Object;
+
+    private wallData: Object;
+    
+
+    /* ------------------------------- UI ELEMENTS ------------------------------ */
+
+    private errorLabel: Label;
+
+    private selectionHighlight: AnimatedSprite;
+
+    private costLabel: Label;
+
+    private hpLabel: Label;
+
+    private atkLabel: Label;
+
 
     loadScene(): void {
 
@@ -61,39 +93,21 @@ export default class xeno_level extends Scene {
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
         this.load.spritesheet("turret", "xeno_assets/spritesheets/turret_simple.json");
-        this.load.spritesheet("UMA", "xeno_assets/spritesheets/uma.json")
+        this.load.spritesheet("uma", "xeno_assets/spritesheets/uma.json")
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json")
-        this.load.image("Drawing", "xeno_assets/images/drawing.png")
+        this.load.spritesheet("highlight", "xeno_assets/spritesheets/highlight.json");
+        this.load.image("ingame_ui", "xeno_assets/images/ingame_ui.png");
+        this.load.object("traps_init", "xeno_assets/data/traps_data.json");
+
     }
 
     startScene(): void {
-        const Slot1 = new Vec2(1455, 210);
-        const Slot2 = new Vec2(1555, 210);
-        const Slot3 = new Vec2(1455, 340);
-        const Slot4 = new Vec2(1555, 340);
-        const Slot5 = new Vec2(1455, 460);
-        const Slot6 = new Vec2(1555, 460);
-        const Slot7 = new Vec2(1455, 590);
-        const Slot8 = new Vec2(1555, 590);
-        const Slot9 = new Vec2(1455, 710);
-        const Slot10 = new Vec2(1555, 710);
-        const SlotMoney = new Vec2(1500, 40);
-        const SlotStatus = new Vec2(1460, 120);
-        const center = this.viewport.getCenter();
+
+
+        this.initUI();
+
 
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
-
-
-
-
-        this.UI = this.addUILayer("UI");
-        const Drawing = this.add.sprite("Drawing", "UI");
-        Drawing.position.copy(center);
-        const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
-        const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
-        this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: '' });
-        this.errorLabel.textColor = Color.RED;
-
 
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
@@ -118,6 +132,30 @@ export default class xeno_level extends Scene {
 
     }
 
+    initUI() {
+        const SlotMoney = new Vec2(1500, 40);
+        const SlotStatus = new Vec2(1460, 120);
+        const center = this.viewport.getCenter();
+        this.UI = this.addUILayer("UI");
+        const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
+        const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
+        const gameUI = this.add.sprite("ingame_ui", "UI");
+        gameUI.position.copy(center);
+
+        this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: '' });
+        this.errorLabel.textColor = Color.RED;
+
+        this.costLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: UI_POSITIONS.COST_LABEL, text: '5000' })
+        this.costLabel.textColor = XENO_COLOR.ORANGE;
+        this.hpLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: UI_POSITIONS.HP_LABEL, text: '5000' })
+        this.hpLabel.textColor = XENO_COLOR.GREEN;
+        this.atkLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: UI_POSITIONS.ATK_LABEL, text: '5000' })
+        this.atkLabel.textColor = XENO_COLOR.BLUE;
+
+        this.selectionHighlight = this.add.animatedSprite("highlight", "UI");
+        this.selectionHighlight.animation.playIfNotAlready("IDLE", true);
+    }
+
     handleEvent(event: GameEvent) {
         switch (event.type) {
             case XENO_EVENTS.UNLOAD_ASSET:
@@ -125,7 +163,7 @@ export default class xeno_level extends Scene {
                 asset.destroy();
                 break;
             case XENO_EVENTS.ERROR:
-                this.errorLabel.text = event.data.get('message');
+                this.errorLabel.setText(event.data.get("message"));
                 break;
             case XENO_EVENTS.TURRET_DIED:
                 const deadTurret = event.data.get('owner');
@@ -163,6 +201,7 @@ export default class xeno_level extends Scene {
             this.handleEvent(event);
         }
 
+
         if (Input.isKeyJustPressed('1')) {
             this.placingMode = 'WALL';
         }
@@ -180,68 +219,27 @@ export default class xeno_level extends Scene {
             this.placingMode = 'TRAP';
         }
 
-        if (Input.isMouseJustPressed(0) && Input.getGlobalMousePressPosition().x < 1388) {
-            const clickColRow = this.floor.getColRowAt(Input.getGlobalMousePosition().clone().add(new Vec2(16, 16)));
-            if (this.isAnyOverlap(clickColRow.clone())) {
-                this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'SPACE OCCUPIED' });
-                return;
+        if (Input.isMouseJustPressed(0)) {
+            const clickPos = Input.getGlobalMousePressPosition().clone();
+            console.log(clickPos);
+
+            if (clickPos.x < UI_POSITIONS.RIGHT_UI_BORDER) {
+                if (clickPos.y > UI_POSITIONS.BOT_UI_BORDER) {
+                    if (
+                        clickPos.x > UI_POSITIONS.UPGRADE_BUTTON.TOP_LEFT.x &&
+                        clickPos.x < UI_POSITIONS.UPGRADE_BUTTON.BOT_RIGHT.x &&
+                        clickPos.y > UI_POSITIONS.UPGRADE_BUTTON.TOP_LEFT.y &&
+                        clickPos.y < UI_POSITIONS.UPGRADE_BUTTON.BOT_RIGHT.y
+                    ) {
+                        this.upgradeFriend();
+                    }
+                } else {
+                    this.mapClick(clickPos);
+                }
+            } else {
+                this.rightMenuClick(clickPos);
             }
-            switch (this.placingMode) {
-                case "WALL":
-                    this.placeWall(clickColRow);
-                    break;
-                case "TRAP":
-                    this.placeTrap(clickColRow, TRAP_TYPE.FROST);
-                    break;
-                case "TURRET":
-                    this.placeTurret(clickColRow);
-                    break;
-                case "ENEMY":
-                    this.placeEnemey(clickColRow);
-            }
-        }
-        else if (Input.isMouseJustPressed(0)) {
-            const clickPos = Input.getGlobalMousePressPosition().clone()
-            if (clickPos.x < 1500 && clickPos.x > 1410) {
-                if (clickPos.y < 270 && clickPos.y > 170) {
-                    console.log("1,1 SLOT1");
-                }
-                else if (clickPos.y < 400 && clickPos.y > 300) {
-                    console.log("1,2 SLOT3");
-                }
-                else if (clickPos.y < 520 && clickPos.y > 420) {
-                    console.log("1,3 SLOT5");
-                }
-                else if (clickPos.y < 650 && clickPos.y > 540) {
-                    console.log("1,4 SLOT7");
-                }
-                else if (clickPos.y < 780 && clickPos.y > 680) {
-                    console.log("1,5 SLOT9");
-                }
-                else if (clickPos.y < 880 && clickPos.y > 820) {
-                    console.log("1,6 Pause");
-                }
-            }
-            else if (clickPos.x < 1600 && clickPos.x > 1510) {
-                if (clickPos.y < 270 && clickPos.y > 170) {
-                    console.log("2,1 SLOT2");
-                }
-                else if (clickPos.y < 400 && clickPos.y > 300) {
-                    console.log("2,2 SLOT4");
-                }
-                else if (clickPos.y < 520 && clickPos.y > 420) {
-                    console.log("2,3 SLOT6");
-                }
-                else if (clickPos.y < 650 && clickPos.y > 540) {
-                    console.log("2,4 SLOT8");
-                }
-                else if (clickPos.y < 780 && clickPos.y > 680) {
-                    console.log("2,5 SLOT10");
-                }
-                else if (clickPos.y < 880 && clickPos.y > 820) {
-                    console.log("2,6 Speed Up");
-                }
-            }
+
         }
 
         if (Input.isMouseJustPressed(2)) {
@@ -254,11 +252,100 @@ export default class xeno_level extends Scene {
         }
     }
 
-    isAnyOverlap(tilePosition: Vec2): boolean {
-        return this.aliveTurrets.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
-            this.aliveWalls.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
-            this.aliveTraps.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
-            this.aliveEnemies.some((e) => this.floor.getColRowAt(e.position).equals(tilePosition))
+
+
+    selectFriend(tilePosition: Vec2) {
+        const friend = this.isAnyOverlap(tilePosition);
+        if (!friend) {
+            this.state.selected = null;
+            return;
+        }
+        this.state.selected = (friend.ai as BattlerAI);
+        this.selectionHighlight.position = friend.position;
+    }
+
+    upgradeFriend() {
+        console.log("CLICKED ON UPGRADED");
+    }
+
+    placeFriend() {
+        console.log("PLACING");
+    }
+
+    mapClick(clickPos: Vec2) {
+        const clickColRow = this.floor.getColRowAt(clickPos.add(new Vec2(16, 16)));
+        if (this.isAnyOverlap(clickColRow.clone())) {
+            this.selectFriend(clickColRow);
+            this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'SPACE OCCUPIED' });
+            return;
+        }
+        this.errorLabel.setText('');
+        switch (this.placingMode) {
+            case "WALL":
+                this.placeWall(clickColRow);
+                break;
+            case "TRAP":
+                this.placeTrap(clickColRow, TRAP_TYPE.FROST);
+                break;
+            case "TURRET":
+                this.placeTurret(clickColRow);
+                break;
+            case "ENEMY":
+                this.placeEnemey(clickColRow);
+        }
+    }
+
+    rightMenuClick(clickPos: Vec2) {
+        if (clickPos.x < 1500 && clickPos.x > 1410) {
+            if (clickPos.y < 270 && clickPos.y > 170) {
+                this.state.placing = 'WALL';
+            }
+            else if (clickPos.y < 400 && clickPos.y > 300) {
+                this.state.placing = TURRET_TYPE.ELECTRIC;
+            }
+            else if (clickPos.y < 520 && clickPos.y > 420) {
+                this.state.placing = TURRET_TYPE.BANK;
+            }
+            else if (clickPos.y < 650 && clickPos.y > 540) {
+                this.state.placing = TRAP_TYPE.FIRE;
+            }
+            else if (clickPos.y < 780 && clickPos.y > 680) {
+                this.state.placing = TRAP_TYPE.ACID;
+            }
+            else if (clickPos.y < 880 && clickPos.y > 820) {
+                console.log("1,6 Pause");
+            }
+        }
+        else if (clickPos.x < 1600 && clickPos.x > 1510) {
+            if (clickPos.y < 270 && clickPos.y > 170) {
+                this.state.placing = TURRET_TYPE.BEAM;
+            }
+            else if (clickPos.y < 400 && clickPos.y > 300) {
+                this.state.placing = TURRET_TYPE.ROCKET;
+            }
+            else if (clickPos.y < 520 && clickPos.y > 420) {
+                this.state.placing = 'ENEMY';
+            }
+            else if (clickPos.y < 650 && clickPos.y > 540) {
+                this.state.placing = TRAP_TYPE.FROST;
+            }
+            else if (clickPos.y < 780 && clickPos.y > 680) {
+                this.state.placing = TRAP_TYPE.NET;
+            }
+            else if (clickPos.y < 880 && clickPos.y > 820) {
+                console.log("2,6 Speed Up");
+            }
+        }
+        console.log(this.state.placing);
+    }
+
+
+
+    isAnyOverlap(tilePosition: Vec2): AnimatedSprite | undefined {
+        return this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
+            this.aliveWalls.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
+            this.aliveTraps.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
+            this.aliveEnemies.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition))
     }
 
 
@@ -381,9 +468,9 @@ export default class xeno_level extends Scene {
     placeEnemey(tilePosition: Vec2) {
         console.log(`DEAD ENEMIES: ${this.deadEnemies.map((e) => e.id)}`);
         let enemy = this.deadEnemies.pop();
-        
+
         if (!enemy) {
-            enemy = this.add.animatedSprite("UMA", "primary");
+            enemy = this.add.animatedSprite("uma", "primary");
             enemy.addAI(EnemyAI, {
                 health: 30,
                 BasePos: new Vec2(672, 352),
@@ -466,3 +553,4 @@ export default class xeno_level extends Scene {
     }
 
 }
+

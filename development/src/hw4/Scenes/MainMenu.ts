@@ -4,13 +4,12 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
-import { CANVAS_SIZE, XENO_LEVEL_PHYSICS_OPTIONS } from "../constants";
+import { CANVAS_SIZE, XENO_COLOR, XENO_LEVEL_PHYSICS_OPTIONS } from "../constants";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import xeno_level from "./xeno_level";
 
 const PADDING = 100;
-const PassiveGrey = new Color(196, 196, 196);
-const ActiveGrey = new Color(229, 229, 229);
+
 
 export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
@@ -70,17 +69,17 @@ export default class MainMenu extends Scene {
         mainTitleLine.fontSize = 78;
 
         const chapterBtn = this.add.uiElement(UIElementType.BUTTON, "main", { position: new Vec2(CANVAS_SIZE.x * 0.75, 4 * PADDING), text: 'CHAPTER' });
-        chapterBtn.borderColor = chapterBtn.backgroundColor = PassiveGrey;
+        chapterBtn.borderColor = chapterBtn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapterBtn.size.set(200, 50);
         chapterBtn.onClickEventId = "chapter"; 
 
         const controlBtn = this.add.uiElement(UIElementType.BUTTON, "main", { position: new Vec2(CANVAS_SIZE.x * 0.75, 5 * PADDING), text: 'CONTROL' });
-        controlBtn.borderColor = controlBtn.backgroundColor = PassiveGrey;
+        controlBtn.borderColor = controlBtn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         controlBtn.size.set(200, 50);
         controlBtn.onClickEventId = "control"; 
 
         const helpBtn = this.add.uiElement(UIElementType.BUTTON, "main", { position: new Vec2(CANVAS_SIZE.x * 0.75, 6 * PADDING), text: 'HELP' });
-        helpBtn.borderColor = helpBtn.backgroundColor = PassiveGrey;
+        helpBtn.borderColor = helpBtn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         helpBtn.size.set(200, 50);
         helpBtn.onClickEventId = "help"; 
 
@@ -90,33 +89,33 @@ export default class MainMenu extends Scene {
         chapterTitleLine.fontSize = 78;
 
         const chapter1_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.25, 4 * PADDING), text: '1-1' })
-        chapter1_1Btn.borderColor = chapter1_1Btn.backgroundColor = PassiveGrey;
+        chapter1_1Btn.borderColor = chapter1_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter1_1Btn.size.set(100, 100);
         chapter1_1Btn.onClickEventId = "chapter1_1"; 
         const chapter1_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.25 , 6 * PADDING), text: '1-2' })
-        chapter1_2Btn.borderColor = chapter1_2Btn.backgroundColor = PassiveGrey;
+        chapter1_2Btn.borderColor = chapter1_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter1_2Btn.size.set(100, 100);
         chapter1_2Btn.onClickEventId = "chapter1_2";
         const chapter2_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.5, 4 * PADDING), text: '2-1' })
-        chapter2_1Btn.borderColor = chapter2_1Btn.backgroundColor = PassiveGrey;
+        chapter2_1Btn.borderColor = chapter2_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter2_1Btn.size.set(100, 100);
         chapter2_1Btn.onClickEventId = "chapter2_1";
         const chapter2_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.5, 6 * PADDING), text: '2-2' })
-        chapter2_2Btn.borderColor = chapter2_2Btn.backgroundColor = PassiveGrey;
+        chapter2_2Btn.borderColor = chapter2_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter2_2Btn.size.set(100, 100);
         chapter2_2Btn.onClickEventId = "chapter2_2";
         const chapter3_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.75, 4 * PADDING), text: '3-1' })
-        chapter3_1Btn.borderColor = chapter3_1Btn.backgroundColor = PassiveGrey;
+        chapter3_1Btn.borderColor = chapter3_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter3_1Btn.size.set(100, 100);
         chapter3_1Btn.onClickEventId = "chapter3_1";
         const chapter3_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.75 , 6 * PADDING), text: '3-2' })
-        chapter3_2Btn.borderColor = chapter3_2Btn.backgroundColor = PassiveGrey;
+        chapter3_2Btn.borderColor = chapter3_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         chapter3_2Btn.size.set(100, 100);
         chapter3_2Btn.onClickEventId = "chapter3_2";
 
 
         const chapterBackBtn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.9, 8 * PADDING), text: 'BACK' });
-        chapterBackBtn.borderColor = chapterBackBtn.backgroundColor = ActiveGrey; 
+        chapterBackBtn.borderColor = chapterBackBtn.backgroundColor = XENO_COLOR.ACTIVE_GREY; 
         chapterBackBtn.size.set(200, 50);
         chapterBackBtn.onClickEventId = "main";
 
@@ -148,7 +147,7 @@ export default class MainMenu extends Scene {
         ESCLine.textColor = Color.BLACK; 
 
         const controlBackBtn = this.add.uiElement(UIElementType.BUTTON, "control", { position: new Vec2(CANVAS_SIZE.x * 0.9, 8 * PADDING), text: 'BACK' });
-        controlBackBtn.borderColor = controlBackBtn.backgroundColor = ActiveGrey; 
+        controlBackBtn.borderColor = controlBackBtn.backgroundColor = XENO_COLOR.ACTIVE_GREY; 
         controlBackBtn.size.set(200, 50);
         controlBackBtn.onClickEventId = "main";
 
@@ -179,7 +178,7 @@ export default class MainMenu extends Scene {
 
 
         const helpBackBtn = this.add.uiElement(UIElementType.BUTTON, "help", { position: new Vec2(CANVAS_SIZE.x * 0.9, 8 * PADDING), text: 'BACK' });
-        helpBackBtn.borderColor = helpBackBtn.backgroundColor = ActiveGrey; 
+        helpBackBtn.borderColor = helpBackBtn.backgroundColor = XENO_COLOR.ACTIVE_GREY; 
         helpBackBtn.size.set(200, 50);
         helpBackBtn.onClickEventId = "main";
 

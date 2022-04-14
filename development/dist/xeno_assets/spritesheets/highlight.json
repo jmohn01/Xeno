@@ -1,6 +1,6 @@
 {
-    "name": "uma",
-    "spriteSheetImage": "uma_test.png",
+    "name": "highlight",
+    "spriteSheetImage": "highlight.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
     "columns": 1,

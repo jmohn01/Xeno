@@ -1,0 +1,108 @@
+{
+    "BEAM": {
+        "atkType": "PointAtk",
+        "color": "#FFDA00",
+        "range": 100,
+        "damage": 10,
+        "cooldown": 1000,
+        "armor": 0,
+        "health": 100,
+        "atkEffect": {},
+        "upgrades": {
+            "SILVER": {
+                "atkType": "PointAtk",
+                "color": "#FFDA00",
+                "range": 100,
+                "cooldown": 1000,
+                "damage": 20,
+                "armor": 0,
+                "health": 140,
+                "atkEffect": {}
+            },
+            "GOLD": {
+                "atkType": "PointAtk",
+                "color": "#FF8000",
+                "range": 200,
+                "cooldown": 1000,
+                "damage": 20,
+                "armor": 0,
+                "health": 200,
+                "atkEffect": {
+                    "fire": {
+                        "duration": 1000,
+                        "ticks": 2,
+                        "damage": 5
+                    }
+                }
+            }
+        }
+    },
+    "ELECTRIC": {
+        "atkType": "AOEAtk",
+        "color": "#0078ff",
+        "range": 300,
+        "damage": 0.5,
+        "cooldown": 200,
+        "armor": 0,
+        "health": 100,
+        "atkEffect": {},
+        "upgrades": {
+            "SILVER": {
+                "atkType": "AOEAtk",
+                "color": "#5600ff",
+                "range": 300,
+                "cooldown": 200,
+                "damage": 0.75,
+                "armor": 0,
+                "health": 140,
+                "atkEffect": {}
+            },
+            "GOLD": {
+                "atkType": "AOEAtk",
+                "color": "#a300ff",
+                "range": 500,
+                "cooldown": 200,
+                "damage": 1,
+                "armor": 0,
+                "health": 200,
+                "atkEffect": {}
+            }
+        }
+    },
+    "ROCKET": {
+        "atkType": "AOEAtk",
+        "color": "#FFDA00",
+        "range": 100,
+        "damage": 10,
+        "cooldown": 1000,
+        "armor": 0,
+        "health": 100,
+        "atkEffect": {},
+        "upgrades": {
+            "SILVER": {
+                "color": "#FFDA00",
+                "range": 100,
+                "cooldown": 1000,
+                "damage": 20,
+                "armor": 0,
+                "health": 140,
+                "atkEffect": {}
+            },
+            "GOLD": {
+                "color": "#FF8000",
+                "range": 200,
+                "cooldown": 1000,
+                "damage": 20,
+                "armor": 0,
+                "health": 200,
+                "atkEffect": {
+                    "fire": {
+                        "duration": 1000,
+                        "ticks": 2,
+                        "damage": 5
+                    }
+                }
+            }
+        }
+    }
+}
