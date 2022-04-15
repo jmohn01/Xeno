@@ -6,6 +6,7 @@ import BattlerAI from "../../AI/BattlerAI";
 import TrapAI from "../../AI/TrapAI";
 import { XENO_ACTOR_TYPE } from "../../constants";
 import AtkAnimation from "../AttackAnimation/AtkAnimation";
+import { ExplosionAnimation } from "../AttackAnimation/ExplosionAnimation";
 import { SplashAnimation } from "../AttackAnimation/SplashAnimation";
 import { SplitAnimation } from "../AttackAnimation/SplitAnimation";
 import BattleManager from "../BattleManager";
@@ -47,6 +48,8 @@ export default class AOEAttack {
             this.atkAnimation.doAnimation(from, this.r, this.assets); 
         } else if (this.atkAnimation instanceof SplitAnimation) {
             this.atkAnimation.doAnimation(from, targets, this.assets); 
+        } else if (this.atkAnimation instanceof ExplosionAnimation) {
+            this.atkAnimation.doAnimation(from, this.assets); 
         }
 
         this.battleManager.handleAOEAtk(targets, this.damage, this.effects); 

@@ -1,28 +1,36 @@
 import AI from "../../Wolfie2D/DataTypes/Interfaces/AI";
+import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Color from "../../Wolfie2D/Utils/Color";
-import { XENO_ACTOR_TYPE } from "../constants";
+import { GRADE, TRAP_TYPE, XENO_ACTOR_TYPE, XENO_EVENTS } from "../constants";
 import AOEAttack from "../GameSystems/Attack/AOEAttack";
 import { EffectData } from "../GameSystems/Attack/internal";
 import { SplashAnimation } from "../GameSystems/AttackAnimation/SplashAnimation";
+import BattleManager from "../GameSystems/BattleManager";
 import xeno_level from "../Scenes/xeno_level";
-import { Grade } from "../type";
 import Upgradeable from "./Upgradable";
 
 export default class TrapAI implements AI, Upgradeable {
     owner: AnimatedSprite
     atk: AOEAttack;
-    grade: Grade;
+    grade: GRADE;
     level: xeno_level;
     range: number; 
+    emitter: Emitter = new Emitter();
+    type: TRAP_TYPE; 
+    battleManager: BattleManager
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { color, damage, range, cooldown, atkEffect, level, battleManager } = options;
+        const { color, damage, range, cooldown, atkEffect, level, battleManager, type, grade } = options;
         this.level = level;
-        this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(color), atkEffect, battleManager);
+        this.range = range;
+        this.type = type; 
+        this.grade = grade;
+        this.battleManager = battleManager;
+        this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(Color.fromStringHex(color)), atkEffect, battleManager);
     }
 
     attack(): void {
@@ -45,7 +53,22 @@ export default class TrapAI implements AI, Upgradeable {
     }
 
     upgrade(): void {
-        throw new Error("Method not implemented.");
+        let newGrade: GRADE;
+        switch(this.grade) {
+            case 'BRONZE':
+                newGrade = GRADE.SILVER;
+                break;
+            case 'SILVER':
+                newGrade = GRADE.GOLD;
+                break;
+            case 'GOLD':
+                this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: 'This cannot be upgraded'});
+                return; 
+        }
+        const { color, damage, range, cooldown, atkEffect } = this.level.getTrapData(this.type, newGrade);
+        this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(Color.fromStringHex(color)), atkEffect, this.battleManager);
+        this.owner.animation.play(`${this.grade}_${this.type}`, true);
+        this.grade = newGrade;
     }
 
 }

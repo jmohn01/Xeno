@@ -27,6 +27,12 @@ export enum TURRET_TYPE {
     BANK = "BANK"
 }
 
+export enum GRADE {
+    BRONZE = 'BRONZE',
+    SILVER = 'SILVER',
+    GOLD = 'GOLD'
+}
+
 
 
 export enum XENO_EVENTS {

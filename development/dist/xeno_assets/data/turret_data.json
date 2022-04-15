@@ -75,27 +75,27 @@
             "health": 100,
             "armor": 5,
             "cooldown": 1000,
-            "money": 5
+            "gold": 5
         },
         "SILVER": {
             "damage": 0,
             "health": 100,
             "armor": 5,
             "cooldown": 1000,
-            "money": 10
+            "gold": 10
         },
         "GOLD": {
             "damage": 0,
             "health": 100,
             "armor": 5,
             "cooldown": 1000,
-            "money": 15
+            "gold": 15
         }
     },
     "ROCKET": {
         "BRONZE": {
             "atkType": "AOEAtk",
-            "color": "#FFDA00",
+            "color": "#8B0000",
             "explosionRange": 32,
             "range": 100,
             "damage": 10,
@@ -106,7 +106,7 @@
         },
         "SILVER": {
             "atkType": "AOEAtk",
-            "color": "#FFDA00",
+            "color": "#8B0000",
             "explosionRange": 32,
             "range": 100,
             "cooldown": 1000,
@@ -117,7 +117,7 @@
         },
         "GOLD": {
             "atkType": "AOEAtk",
-            "color": "#FF8000",
+            "color": "#8B0000",
             "explosionRange": 32,
             "range": 200,
             "cooldown": 1000,

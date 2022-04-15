@@ -19,16 +19,20 @@ import EnemyAI from "../AI/EnemyAI";
 import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { CANVAS_SIZE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
+import { CANVAS_SIZE, GRADE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
+import Upgradeable from "../AI/Upgradable";
 
-export type PlayerState = {
+export type LevelState = {
     placing: TRAP_TYPE | TURRET_TYPE | 'WALL' | 'ENEMY',
-    selected: BattlerAI
+    selected: BattlerAI & Upgradeable,
+    gold: number,
+    currentWave: number,
+    maxWave: number
 }
 
 const PassiveGrey = new Color(196, 196, 196);
@@ -36,9 +40,12 @@ const PassiveGrey = new Color(196, 196, 196);
 
 export default class xeno_level extends Scene {
 
-    private state: PlayerState = {
+    private state: LevelState = {
         placing: null,
-        selected: null
+        selected: null,
+        gold: 0,
+        currentWave: 0,
+        maxWave: 0
     }
 
     private floor: OrthogonalTilemap;
@@ -83,6 +90,10 @@ export default class xeno_level extends Scene {
     private hpLabel: Label;
 
     private atkLabel: Label;
+
+    private goldLabel: Label;
+
+    private waveLabel: Label; 
 
 
     loadScene(): void {
@@ -131,13 +142,16 @@ export default class xeno_level extends Scene {
 
     initUI() {
         const SlotMoney = new Vec2(1500, 40);
-        const SlotStatus = new Vec2(1460, 120);
+        const SlotStatus = new Vec2(1488, 120);
         const center = this.viewport.getCenter();
         this.UI = this.addUILayer("UI");
-        const MoneyLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "00000" });
-        const StatusLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "Status" });
         const gameUI = this.add.sprite("ingame_ui", "UI");
         gameUI.position.copy(center);
+        
+        this.goldLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotMoney, text: "0" });
+        this.goldLabel.textColor = Color.BLACK;
+        this.waveLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: SlotStatus, text: "0 / 4" });
+        this.waveLabel.textColor = Color.BLACK;
 
         this.errorLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(700, 200), text: '' });
         this.errorLabel.textColor = Color.RED;
@@ -151,6 +165,8 @@ export default class xeno_level extends Scene {
 
         this.selectionHighlight = this.add.animatedSprite("highlight", "UI");
         this.selectionHighlight.animation.playIfNotAlready("IDLE", true);
+        this.updateLevelUI();
+        this.updateSelectedUI();
     }
 
     initData() {
@@ -158,7 +174,6 @@ export default class xeno_level extends Scene {
         this.turretData = this.load.getObject('turretData');
         this.wallData = this.load.getObject('wallData');
         this.enemyData = this.load.getObject('enemyData');
-        // @ts-ignore
     }
 
     handleEvent(event: GameEvent) {
@@ -207,8 +222,9 @@ export default class xeno_level extends Scene {
         }
 
         if (Input.isMouseJustPressed(0)) {
-            const clickPos = Input.getGlobalMousePressPosition().clone();
 
+            const clickPos = Input.getGlobalMousePressPosition().clone();
+            console.log(clickPos);
             if (clickPos.x < UI_POSITIONS.RIGHT_UI_BORDER) {
                 if (clickPos.y > UI_POSITIONS.BOT_UI_BORDER) {
                     if (
@@ -240,24 +256,6 @@ export default class xeno_level extends Scene {
 
 
 
-    selectFriend(tilePosition: Vec2) {
-        const friend = this.isAnyOverlap(tilePosition);
-        if (!friend) {
-            this.state.selected = null;
-            return;
-        }
-        this.state.selected = (friend.ai as BattlerAI);
-        this.selectionHighlight.position = friend.position;
-    }
-
-    upgradeFriend() {
-        console.log("CLICKED ON UPGRADED");
-    }
-
-    placeFriend() {
-        console.log("PLACING");
-    }
-
     mapClick(clickPos: Vec2) {
         const clickColRow = this.floor.getColRowAt(clickPos.add(new Vec2(16, 16)));
         if (this.isAnyOverlap(clickColRow.clone())) {
@@ -265,26 +263,33 @@ export default class xeno_level extends Scene {
             this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'SPACE OCCUPIED' });
             return;
         }
-        this.errorLabel.setText('');
-        switch(this.state.placing) {
+        this.state.selected = null;
+        this.updateSelectedUI();
+        let spawnedAI: BattlerAI & Upgradeable;
+        switch (this.state.placing) {
             case TRAP_TYPE.ACID:
             case TRAP_TYPE.NET:
             case TRAP_TYPE.FIRE:
             case TRAP_TYPE.FROST:
-                this.placeTrap(clickColRow, this.state.placing);
+                spawnedAI = this.placeTrap(clickColRow, this.state.placing);
                 break;
             case TURRET_TYPE.BANK:
             case TURRET_TYPE.BEAM:
             case TURRET_TYPE.ELECTRIC:
             case TURRET_TYPE.ROCKET:
-                this.placeTurret(clickColRow, this.state.placing);
+                spawnedAI = this.placeTurret(clickColRow, this.state.placing);
                 break;
             case 'WALL':
-                this.placeWall(clickColRow);
+                spawnedAI = this.placeWall(clickColRow);
                 break;
             case 'ENEMY':
                 this.placeEnemey(clickColRow);
                 break;
+        }
+        if (spawnedAI) {
+            console.log(spawnedAI);
+            this.state.selected = spawnedAI;
+            this.updateSelectedUI();
         }
 
     }
@@ -333,6 +338,63 @@ export default class xeno_level extends Scene {
         console.log(this.state.placing);
     }
 
+    selectFriend(tilePosition: Vec2) {
+        const friend = this.isAnyOverlap(tilePosition);
+        if (!friend) {
+            this.state.selected = null;
+            return;
+        }
+        const friendAI = (friend.ai as BattlerAI & Upgradeable);
+        this.state.selected = friendAI;
+        this.updateSelectedUI();
+        this.atkLabel.visible = true;
+        this.hpLabel.visible = true;
+        this.selectionHighlight.visible = true;
+    }
+
+    upgradeFriend() {
+        console.log("UPGRADE");
+        if (this.state.selected) {
+            this.state.selected.upgrade();
+            this.updateSelectedUI();
+        }
+    }
+
+    updateSelectedUI() {
+        if (!this.state.selected) {
+            this.atkLabel.visible = false;
+            this.hpLabel.visible = false;
+            this.selectionHighlight.visible = false;
+            return;
+        }
+        const friendAI = this.state.selected;
+        this.selectionHighlight.position = friendAI.owner.position;
+        if (friendAI.health) {
+            this.hpLabel.text = friendAI.health.toString();
+        } else {
+            this.hpLabel.text = '/';
+        }
+        if (friendAI.atk) {
+            this.atkLabel.text = friendAI.atk.damage.toString();
+        } else {
+            this.atkLabel.text = '/';
+        }
+        this.atkLabel.visible = true;
+        this.hpLabel.visible = true;
+        this.selectionHighlight.visible = true;
+    }
+
+    updateLevelUI() {
+        this.goldLabel.text = `${this.state.gold}`; 
+        this.waveLabel.text = `${this.state.currentWave} / ${this.state.maxWave}`;
+    }
+
+    addLevelGold(inc: number) {
+        this.state.gold += inc;
+        this.updateLevelUI();
+    }
+
+
 
 
     isAnyOverlap(tilePosition: Vec2): AnimatedSprite | undefined {
@@ -342,23 +404,8 @@ export default class xeno_level extends Scene {
             this.aliveEnemies.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition))
     }
 
-
-    placeTrap(tilePosition: Vec2, type: TRAP_TYPE) {
-        const trap = this.add.animatedSprite('traps', 'primary');
-        //@ts-ignore
-        trap.addAI(TrapAI, {
-            // @ts-ignore
-            ...this.trapData[type].BRONZE,
-            battleManager: this.battleManager
-        })
-        trap.animation.playIfNotAlready(`BRONZE_${TRAP_TYPE}`, true);
-        trap.position = tilePosition.mult(new Vec2(32, 32));
-        trap.visible = true;
-        trap.addPhysics(undefined, undefined, false, true);
-        trap.setGroup(XENO_ACTOR_TYPE.TRAP);
-        trap.setTrigger(XENO_ACTOR_TYPE.ENEMY, XENO_EVENTS.TRIGGER_TRAP, null);
-        this.aliveTraps.push(trap);
-
+    placeFriend() {
+        console.log("PLACING");
     }
 
     placeBase(position: Vec2) {
@@ -378,7 +425,28 @@ export default class xeno_level extends Scene {
         base.animation.play("IDLE", true);
     }
 
-    placeWall(tilePosition: Vec2) {
+    placeTrap(tilePosition: Vec2, type: TRAP_TYPE): BattlerAI & Upgradeable {
+        const trap = this.add.animatedSprite('traps', 'primary');
+        //@ts-ignore
+        trap.addAI(TrapAI, {
+            // @ts-ignore
+            ...this.trapData[type].BRONZE,
+            grade: GRADE.BRONZE,
+            level: this,
+            type: type, 
+            battleManager: this.battleManager
+        })
+        trap.animation.playIfNotAlready(`${GRADE.BRONZE}_${type}`, true);
+        trap.position = tilePosition.mult(new Vec2(32, 32));
+        trap.visible = true;
+        trap.addPhysics(undefined, undefined, false, true);
+        trap.setGroup(XENO_ACTOR_TYPE.TRAP);
+        trap.setTrigger(XENO_ACTOR_TYPE.ENEMY, XENO_EVENTS.TRIGGER_TRAP, null);
+        this.aliveTraps.push(trap);
+        return (trap.ai as BattlerAI & Upgradeable);
+    }
+
+    placeWall(tilePosition: Vec2): BattlerAI & Upgradeable {
         let wall: AnimatedSprite = this.deadWalls.pop();
 
 
@@ -420,6 +488,7 @@ export default class xeno_level extends Scene {
         wall.ai.initializeAI(wall, {
             //@ts-ignore
             ...this.wallData['DIRT'],
+            level: this,
             type: WALL_TYPE.DIRT,
             leftTile: leftTile,
             rightTile: rightTile,
@@ -431,27 +500,41 @@ export default class xeno_level extends Scene {
         wall.visible = true;
         wall.addPhysics();
         this.aliveWalls.push(wall);
+        return (wall.ai as BattlerAI & Upgradeable);
     }
 
-    placeTurret(tilePosition: Vec2, type: TURRET_TYPE) {
+    placeTurret(tilePosition: Vec2, type: TURRET_TYPE): BattlerAI & Upgradeable {
         let turret = this.deadTurrets.pop();
-
+        // Have to initialize the turret's position before intializing AI for explosion animation.
         if (!turret) {
             turret = this.add.animatedSprite("turret", "primary");
+            turret.position = tilePosition.mult(new Vec2(32, 32));
             turret.addAI(
-                TurretAI, 
-                { 
+                TurretAI,
+                {
                     //@ts-ignore
-                    ...this.turretData[type].BRONZE, 
-                    level: this, 
+                    ...this.turretData[type].BRONZE,
+                    level: this,
                     battleManager: this.battleManager,
                     type: type
                 });
+        } else {
+            turret.position = tilePosition.mult(new Vec2(32, 32));
+            turret.ai.initializeAI(turret, {
+                //@ts-ignore
+                ...this.turretData[type].BRONZE,
+                level: this,
+                battleManager: this.battleManager,
+                type: type
+            });
+            turret.setAIActive(true, {});
         }
-        turret.position = tilePosition.mult(new Vec2(32, 32));
+        turret.animation.playIfNotAlready("IDLE", true);
+        
         turret.visible = true;
         turret.addPhysics();
         this.aliveTurrets.push(turret);
+        return (turret.ai as BattlerAI & Upgradeable);
     }
 
     placeEnemey(tilePosition: Vec2) {
@@ -536,6 +619,24 @@ export default class xeno_level extends Scene {
                 return curr.ai as BattlerAI;
         }
     }
+
+    getWallData(type: WALL_TYPE) {
+        //@ts-ignore
+        return this.wallData[type];
+    }
+
+    getTrapData(type: TRAP_TYPE, grade: GRADE) {
+        console.log(`${grade}_${type}`);
+
+        //@ts-ignore
+        return this.trapData[type][grade];
+    }
+
+    getTurretData(type: TURRET_TYPE, grade: GRADE) {
+        //@ts-ignore
+        return this.turretData[type][grade];
+    }
+
 
     getFloor() {
         return this.floor;

@@ -27,7 +27,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
     effects: Effect<any>[];
     atkEffect: EffectData;
     atk: PointAttack | AOEAttack;
-    
+
 
 
     owner: AnimatedSprite;
@@ -44,14 +44,14 @@ export default class WallAI implements BattlerAI, Upgradeable {
         if (this.health <= 0) {
             return;
         }
-        
-        this.health -= damage; 
+
+        this.health -= damage;
 
         if (this.health <= 0) {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
             this.owner.visible = false;
-            this.emitter.fireEvent(XENO_EVENTS.WALL_DIED, {owner: this.owner}); 
+            this.emitter.fireEvent(XENO_EVENTS.WALL_DIED, { owner: this.owner });
         }
 
     }
@@ -59,31 +59,32 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { health, armor, type, leftTile, rightTile, botTile, topTile } = options;
-        this.health = health; 
+        const { health, armor, type, level, leftTile, rightTile, botTile, topTile } = options;
+        this.health = health;
         this.armor = armor;
         this.type = type;
+        this.level = level; 
         this.neighboringWall[NEIGHBOR.LEFT] = leftTile;
         this.neighboringWall[NEIGHBOR.RIGHT] = rightTile;
         this.neighboringWall[NEIGHBOR.TOP] = topTile;
         this.neighboringWall[NEIGHBOR.BOT] = botTile;
         this.neighborNum = this.neighboringWall.filter((e) => !!e).length;
-        this.updateShape(); 
+        this.updateShape();
         this.receiver.subscribe([
             XENO_EVENTS.EFFECT_END
         ])
     }
 
     addNeighbor(w: AnimatedSprite, dir: NEIGHBOR) {
-        this.neighboringWall[dir] = w; 
+        this.neighboringWall[dir] = w;
         this.neighborNum++;
         this.updateShape();
     }
 
     delNeighbor(dir: NEIGHBOR) {
-        this.neighboringWall[dir] = null; 
+        this.neighboringWall[dir] = null;
         this.neighborNum--;
-        this.updateShape(); 
+        this.updateShape();
     }
 
     updateShape(): void {
@@ -99,21 +100,25 @@ export default class WallAI implements BattlerAI, Upgradeable {
     }
 
     upgrade(): void {
+        let newType: WALL_TYPE;
         switch (this.type) {
             case WALL_TYPE.DIRT:
-                this.type = WALL_TYPE.WOOD;
-                this.health = 2 * 100;
+                newType = WALL_TYPE.WOOD;
                 break;
             case WALL_TYPE.WOOD:
-                this.type = WALL_TYPE.STONE;
-                this.health = 3 * 100;
+                newType = WALL_TYPE.STONE;
                 break;
             case WALL_TYPE.STONE:
-                this.type = WALL_TYPE.FIBER;
-                this.health = 4 * 100;
+                newType = WALL_TYPE.FIBER;
                 break;
             case WALL_TYPE.FIBER:
+                this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'This cannot be upgraded' })
+                return;
         }
+        const { health, armor } = this.level.getWallData(newType);
+        this.health = health;
+        this.armor = armor;
+        this.type = newType;
         this.owner.animation.play(`${this.type}_${this.shape}`, true);
     }
 
@@ -127,17 +132,17 @@ export default class WallAI implements BattlerAI, Upgradeable {
     }
 
     handleEvent(event: GameEvent): void {
-        switch(event.type) {
+        switch (event.type) {
             case XENO_EVENTS.EFFECT_END:
                 if (event.data.get("owner") === this) {
                     this.removeEffect(event.data.get("id"));
                 }
-                break ;
+                break;
         }
     }
 
     update(deltaT: number): void {
-        
+
     }
 
     addEffect(effect: Effect<any>): void {

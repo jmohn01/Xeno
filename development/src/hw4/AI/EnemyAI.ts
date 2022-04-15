@@ -80,7 +80,7 @@ export default class EnemyAI implements BattlerAI {
         if (this.health <= 0) {
             return;
         }
-
+        console.log(damage);
         this.health -= damage;
         
         if (this.health <= 0) {
@@ -170,12 +170,12 @@ export default class EnemyAI implements BattlerAI {
         }
         this.effects.push(effect);
         effect.applyEffect();
-        console.log("ENEEMY AI: %d, ARMOR: %d", this.owner.id, this.armor);
+        console.log("ENEMY %d added Effect", this.owner.id, effect);
     }
 
     removeEffect(id: number): void {
         this.effects = this.effects.filter((e) => e.id !== id);
-        console.log("ENEEMY AI: %d, ARMOR: %d", this.owner.id, this.armor);
+        console.log("ENEMY %d removed Effect", this.owner.id, this);
     }
 
     destroy(): void {
