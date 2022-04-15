@@ -1,0 +1,30 @@
+{
+    "1_1": {
+        "gold": 2000,
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE"
+        ],
+        "waves": {
+            "1": [
+                { 
+                    "enemyType": "BASIC",
+                    "num": 20 
+                }
+            ],
+            "2": [
+                {
+                    "enemyType": "BASIC",
+                    "num": 20
+                }
+            ]
+        },
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
+    }
+}

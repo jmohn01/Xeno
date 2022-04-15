@@ -5,7 +5,6 @@
         "speed": 20,
         "damage": 5,
         "cooldown": 1000,
-        "atkAnimation": "slice",
         "color": "#000000"
     }   
 }

@@ -71,4 +71,10 @@ export default class TrapAI implements AI, Upgradeable {
         this.grade = newGrade;
     }
 
+    toString(): string {
+        return `${this.type} TRAP. Triggers when an enemy walks over it.`;
+    }
+
+    
+
 }

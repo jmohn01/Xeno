@@ -55,8 +55,7 @@ export default class AOEAttack {
         this.battleManager.handleAOEAtk(targets, this.damage, this.effects); 
 
         this.cooldownTimer.start(); 
-
-
     }
+
 
 }

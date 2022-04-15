@@ -17,6 +17,9 @@ import BattlerAI from "./BattlerAI";
 
 
 export default class EnemyAI implements BattlerAI {
+
+    range: number;
+    
     level: xeno_level;
 
     atk: PointAttack;

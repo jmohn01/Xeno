@@ -22,6 +22,7 @@ export default class BaseAI implements BattlerAI {
     atkEffect: EffectData;
     atk: PointAttack | AOEAttack;
     emmitter: Emitter = new Emitter();
+    range: number; 
 
 
     damage(damage: number): void {

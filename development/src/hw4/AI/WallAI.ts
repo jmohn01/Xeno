@@ -27,9 +27,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
     effects: Effect<any>[];
     atkEffect: EffectData;
     atk: PointAttack | AOEAttack;
-
-
-
+    
+    
+    
+    range: number;
     owner: AnimatedSprite;
     health: number;
     neighboringWall: Array<AnimatedSprite> = new Array(4);

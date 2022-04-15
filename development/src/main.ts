@@ -25,7 +25,7 @@ import { CANVAS_SIZE } from "./hw4/constants";
             {name: "slot2", keys: ["2"]},
         ],
         useWebGL: false,                        // Tell the game we want to use webgl
-        showDebug: true                      // Whether to show debug messages. You can change this to true if you want
+        showDebug: false                      // Whether to show debug messages. You can change this to true if you want
     }
 
 

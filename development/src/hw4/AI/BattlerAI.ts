@@ -13,6 +13,8 @@ export default interface BattlerAI extends AI {
 
     health: number;
 
+    range: number; 
+
     speed: number;
 
     armor: number;
