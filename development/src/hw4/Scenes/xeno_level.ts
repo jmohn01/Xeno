@@ -121,7 +121,7 @@ export default class xeno_level extends Scene {
         this.load.spritesheet("base", "xeno_assets/spritesheets/generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
-        this.load.spritesheet("turret", "xeno_assets/spritesheets/turret_simple.json");
+        this.load.spritesheet("turret", "xeno_assets/spritesheets/turret.json");
         this.load.spritesheet("uma", "xeno_assets/spritesheets/uma.json")
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json")
         this.load.spritesheet("highlight", "xeno_assets/spritesheets/highlight.json");
@@ -160,6 +160,7 @@ export default class xeno_level extends Scene {
             XENO_EVENTS.ERROR,
         ])
         this.initLevel();
+        this.updateLevelUI();
     
     }
 
@@ -395,6 +396,7 @@ export default class xeno_level extends Scene {
 
     selectFriend(tilePosition: Vec2) {
         const friend = this.isAnyOverlap(tilePosition);
+        console.log(friend);
         if (!friend) {
             this.state.selected = null;
             return;
@@ -470,13 +472,13 @@ export default class xeno_level extends Scene {
 
 
 
-    isAnyOverlap(tilePosition: Vec2): AnimatedSprite | undefined {
+    isAnyOverlap(tilePosition: Vec2): AnimatedSprite | Sprite | undefined {
         return this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveWalls.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveTraps.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.aliveEnemies.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
             this.spawns.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
-            this.floor.getColRowAt(this.base.position).equals(tilePosition) ? this.base : undefined;
+            (this.floor.getColRowAt(this.base.position).equals(tilePosition) ? this.base : undefined);
     }
 
     placeFriend() {
@@ -604,7 +606,7 @@ export default class xeno_level extends Scene {
             });
             turret.setAIActive(true, {});
         }
-        turret.animation.playIfNotAlready("IDLE", true);
+        turret.animation.playIfNotAlready(`${type}_IDLE`, true);
 
         turret.visible = true;
         turret.addPhysics();

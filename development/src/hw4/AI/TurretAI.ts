@@ -20,7 +20,7 @@ import BattlerAI from "./BattlerAI";
 import Resettable from "./Resettable";
 import Upgradeable from "./Upgradable";
 
-export default class TurretAI implements BattlerAI, Upgradeable{
+export default class TurretAI implements BattlerAI, Upgradeable {
     level: xeno_level;
 
     armor: number;
@@ -51,7 +51,7 @@ export default class TurretAI implements BattlerAI, Upgradeable{
 
     grade: GRADE
 
-    battleManager: BattleManager; 
+    battleManager: BattleManager;
 
     damage(damage: number) {
         if (this.health <= 0) {
@@ -75,9 +75,9 @@ export default class TurretAI implements BattlerAI, Upgradeable{
         const { battleManager, level, type } = options;
         this.type = type;
         this.grade = GRADE.BRONZE;
-        this.battleManager = battleManager; 
+        this.battleManager = battleManager;
         this.level = level;
-        this.setNewStats(options); 
+        this.setNewStats(options);
     }
 
 
@@ -86,7 +86,7 @@ export default class TurretAI implements BattlerAI, Upgradeable{
     }
 
     activate(options: Record<string, any>): void {
-        
+
     }
 
     handleEvent(event: GameEvent): void {
@@ -97,9 +97,13 @@ export default class TurretAI implements BattlerAI, Upgradeable{
         switch (this.type) {
             case TURRET_TYPE.BEAM: {
                 const target = this.level.findEnemyInRange(this.owner.position, this.range);
-                if (target)
+                if (target) {
                     //@ts-ignore
                     this.atk.attack(this, target, XENO_ACTOR_TYPE.FRIEND);
+                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                } else {
+                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
+                }
             } break;
 
             case TURRET_TYPE.ROCKET: {
@@ -107,22 +111,31 @@ export default class TurretAI implements BattlerAI, Upgradeable{
                 if (target) {
                     //@ts-ignore
                     this.atk.attack(target.owner.position, this.level.findEnemiesInRange(target.owner.position, this.explosionRange), this.owner.getScene());
+                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                } else {
+                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
                 }
             } break;
             case TURRET_TYPE.ELECTRIC: {
                 const pos = this.owner.position;
-                //@ts-ignore
-                this.atk.attack(pos, this.level.findEnemiesInRange(pos, this.range), this.owner.getScene());
+                const targets = this.level.findEnemiesInRange(pos, this.range);
+                if (targets.length !== 0) {
+                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                    //@ts-ignore
+                    this.atk.attack(pos, targets, this.owner.getScene());
+                } else {
+                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
+                }
             } break;
             case TURRET_TYPE.BANK: {
-                
+                this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
             } break;
         }
     }
 
     upgrade(): void {
         let newGrade: GRADE;
-        switch(this.grade) {
+        switch (this.grade) {
             case 'BRONZE':
                 newGrade = GRADE.SILVER;
                 break;
@@ -130,8 +143,8 @@ export default class TurretAI implements BattlerAI, Upgradeable{
                 newGrade = GRADE.GOLD;
                 break;
             case 'GOLD':
-                this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: 'This cannot be upgraded'});
-                return; 
+                this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'This cannot be upgraded' });
+                return;
         }
         if (this.type === TURRET_TYPE.BANK) {
             this.bankTimer.pause();
@@ -145,7 +158,7 @@ export default class TurretAI implements BattlerAI, Upgradeable{
         const { armor, health, color, range, damage, cooldown, atkEffect } = data;
         let colorObj: Color;
         if (color)
-            colorObj = Color.fromStringHex(color); 
+            colorObj = Color.fromStringHex(color);
         switch (this.type) {
             case TURRET_TYPE.BEAM:
                 this.atk = new PointAttack(damage, cooldown, new BulletAnimation(colorObj), atkEffect, this.battleManager);

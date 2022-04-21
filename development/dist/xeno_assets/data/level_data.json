@@ -4,7 +4,14 @@
         "friendAllowed": [
             "WALL",
             "BEAM",
-            "FIRE"
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
         ],
         "waves": {
             "1": [

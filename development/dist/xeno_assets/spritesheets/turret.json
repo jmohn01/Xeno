@@ -1,15 +1,43 @@
 {
     "name": "turret",
-    "spriteSheetImage": "turret_test.png",
+    "spriteSheetImage": "turret.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
-    "columns": 1,
-    "rows": 1,
+    "columns": 4,
+    "rows": 4,
     "durationType": "time",
     "animations": [
         { 
-            "name": "IDLE",
+            "name": "ROCKET_IDLE",
             "frames": [ {"index": 0, "duration": 600} ]
+        },
+        { 
+            "name": "ROCKET_ATK",
+            "frames": [ {"index": 1, "duration": 20}, {"index": 2, "duration": 20}, {"index": 3, "duration": 20} ]
+        },
+        { 
+            "name": "ELECTRIC_IDLE",
+            "frames": [ {"index": 4, "duration": 600} ]
+        },
+        { 
+            "name": "ELECTRIC_ATK",
+            "frames": [ {"index": 5, "duration": 20}, {"index": 6, "duration": 20}, {"index": 7, "duration": 20} ]
+        },
+        { 
+            "name": "BEAM_IDLE",
+            "frames": [ {"index": 8, "duration": 600} ]
+        },
+        { 
+            "name": "BEAM_ATK",
+            "frames": [ {"index": 9, "duration": 20}, {"index": 10, "duration": 20}, {"index": 11, "duration": 20} ]
+        },
+        { 
+            "name": "BANK_IDLE",
+            "frames": [ {"index": 12, "duration": 600} ]
+        },
+        { 
+            "name": "BANK_ATK",
+            "frames": [ {"index": 13, "duration": 20}, {"index": 14, "duration": 20}, {"index": 15, "duration": 20} ]
         }
     ]
 }
