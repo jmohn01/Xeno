@@ -1,0 +1,10 @@
+{
+    "basic":{
+        "health": 80,
+        "armor": 0,
+        "speed": 20,
+        "damage": 5,
+        "cooldown": 1000,
+        "color": "#000000"
+    }   
+}

@@ -1,0 +1,187 @@
+{
+    "name": "walls",
+    "spriteSheetImage": "walls.png",
+    "spriteWidth": 32,
+    "spriteHeight": 32,
+    "columns": 44,
+    "rows": 1,
+    "durationType": "time",
+    "animations": [
+        { 
+            "name": "DIRT_CROSSROAD",
+            "frames": [ {"index": 0, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_HORIZONTAL",
+            "frames": [ {"index": 1, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_VERTICAL",
+            "frames": [ {"index": 2, "duration": 1} ]
+        },
+        { 
+            "name": "DIRT_LTRI",
+            "frames": [ {"index": 3, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_TTRI",
+            "frames": [ {"index": 4, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_RTRI",
+            "frames": [ {"index": 5, "duration": 1} ]
+        },
+        { 
+            "name": "DIRT_BTRI",
+            "frames": [ {"index": 6, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_LTTURN",
+            "frames": [ {"index": 7, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_RTTURN",
+            "frames": [ {"index": 8, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_RBTURN",
+            "frames": [ {"index": 9, "duration": 1} ]
+        },
+        {
+            "name": "DIRT_LBTURN",
+            "frames": [ {"index": 10, "duration": 1} ]
+        },
+        { 
+            "name": "WOOD_CROSSROAD",
+            "frames": [ {"index": 11, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_HORIZONTAL",
+            "frames": [ {"index": 12, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_VERTICAL",
+            "frames": [ {"index": 13, "duration": 1} ]
+        },
+        { 
+            "name": "WOOD_LTRI",
+            "frames": [ {"index": 14, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_TTRI",
+            "frames": [ {"index": 15, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_RTRI",
+            "frames": [ {"index": 16, "duration": 1} ]
+        },
+        { 
+            "name": "WOOD_BTRI",
+            "frames": [ {"index": 17, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_LTTURN",
+            "frames": [ {"index": 18, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_RTTURN",
+            "frames": [ {"index": 19, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_RBTURN",
+            "frames": [ {"index": 20, "duration": 1} ]
+        },
+        {
+            "name": "WOOD_LBTURN",
+            "frames": [ {"index": 21, "duration": 1} ]
+        },
+        { 
+            "name": "STONE_CROSSROAD",
+            "frames": [ {"index": 22, "duration": 1} ]
+        },
+        {
+            "name": "STONE_HORIZONTAL",
+            "frames": [ {"index": 23, "duration": 1} ]
+        },
+        {
+            "name": "STONE_VERTICAL",
+            "frames": [ {"index": 24, "duration": 1} ]
+        },
+        { 
+            "name": "STONE_LTRI",
+            "frames": [ {"index": 25, "duration": 1} ]
+        },
+        {
+            "name": "STONE_TTRI",
+            "frames": [ {"index": 26, "duration": 1} ]
+        },
+        {
+            "name": "STONE_RTRI",
+            "frames": [ {"index": 27, "duration": 1} ]
+        },
+        { 
+            "name": "STONE_BTRI",
+            "frames": [ {"index": 28, "duration": 1} ]
+        },
+        {
+            "name": "STONE_LTTURN",
+            "frames": [ {"index": 29, "duration": 1} ]
+        },
+        {
+            "name": "STONE_RTTURN",
+            "frames": [ {"index": 30, "duration": 1} ]
+        },
+        {
+            "name": "STONE_RBTURN",
+            "frames": [ {"index": 31, "duration": 1} ]
+        },
+        {
+            "name": "STONE_LBTURN",
+            "frames": [ {"index": 32, "duration": 1} ]
+        },
+        { 
+            "name": "FIBER_CROSSROAD",
+            "frames": [ {"index": 33, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_HORIZONTAL",
+            "frames": [ {"index": 34, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_VERTICAL",
+            "frames": [ {"index": 35, "duration": 1} ]
+        },
+        { 
+            "name": "FIBER_LTRI",
+            "frames": [ {"index": 36, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_TTRI",
+            "frames": [ {"index": 37, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_RTRI",
+            "frames": [ {"index": 38, "duration": 1} ]
+        },
+        { 
+            "name": "FIBER_BTRI",
+            "frames": [ {"index": 39, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_LTTURN",
+            "frames": [ {"index": 40, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_RTTURN",
+            "frames": [ {"index": 41, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_RBTURN",
+            "frames": [ {"index": 42, "duration": 1} ]
+        },
+        {
+            "name": "FIBER_LBTURN",
+            "frames": [ {"index": 43, "duration": 1} ]
+        }
+    ]
+}

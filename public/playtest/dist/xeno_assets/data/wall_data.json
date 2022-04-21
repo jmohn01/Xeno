@@ -1,0 +1,18 @@
+{
+    "DIRT": {
+        "health": 100,
+        "armor": 0
+    },
+    "WOOD": {
+        "health": 200,
+        "armor": 0
+    },
+    "STONE": {
+        "health": 300,
+        "armor": 5
+    },
+    "FIBER": {
+        "health": 400,
+        "armor": 20
+    }
+}
