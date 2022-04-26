@@ -26,5 +26,145 @@
             {"x": 1, "y": 20},
             {"x": 43, "y": 20}
         ]
+    },
+    "1_2": {
+        "gold": 2000,
+        "baseHP": 1000,
+        "baseArmor": 0, 
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
+        ],
+        "waves": [
+            [0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
+    },
+    "2_1": {
+        "gold": 2000,
+        "baseHP": 1000,
+        "baseArmor": 0, 
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
+        ],
+        "waves": [
+            [0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
+    },
+    "2_2": {
+        "gold": 2000,
+        "baseHP": 1000,
+        "baseArmor": 0, 
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
+        ],
+        "waves": [
+            [0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
+    },
+    "3_1": {
+        "gold": 2000,
+        "baseHP": 1000,
+        "baseArmor": 0, 
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
+        ],
+        "waves": [
+            [0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
+    },
+    "3_2": {
+        "gold": 2000,
+        "baseHP": 1000,
+        "baseArmor": 0, 
+        "friendAllowed": [
+            "WALL",
+            "BEAM",
+            "FIRE",
+            "FROST",
+            "ACID",
+            "NET",
+            "ELECTRIC",
+            "ROCKET",
+            "BANK",
+            "ENEMY"
+        ],
+        "waves": [
+            [0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        "spawns": [
+            {"x": 1, "y": 1},
+            {"x": 43, "y": 1},
+            {"x": 1, "y": 20},
+            {"x": 43, "y": 20}
+        ]
     }
 }

@@ -6,9 +6,9 @@ export default class level_1_1 extends xeno_level {
     level: string = '1_1';
 
     loadScene(): void {
-        this.load.tilemap("level", "xeno_assets/map/map_1_1.json");
+        this.load.tilemap("level", "xeno_assets/map/map_3_2.json");
         super.loadScene();
-        this.load.audio('music', "xeno_assets/audio/lvl1.wav");
+        this.load.audio('music', "xeno_assets/audio/lvl3.wav");
     }
 
     unloadScene(): void {

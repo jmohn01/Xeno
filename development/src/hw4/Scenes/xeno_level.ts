@@ -269,12 +269,15 @@ export default class xeno_level extends Scene {
                 break;
             case XENO_EVENTS.ENEMY_DIED:
                 const deadEnemy = event.data.get('owner');
+                const reward = event.data.get('reward'); 
+                deadEnemy.visible = false; 
                 this.state.aliveEnemies--;
+                this.state.gold += reward; 
                 if (!this.state.aliveEnemies) {
                     this.emitter.fireEvent(XENO_EVENTS.GAME_OVER, {won: true});
                 }
-                this.aliveEnemies = this.aliveEnemies.filter((e) => e.id != deadEnemy.id);
                 this.deadEnemies.push(deadEnemy);
+                this.updateLevelUI();
                 break;
             case XENO_EVENTS.GAME_OVER:
                 console.log(event.data.get('won'));
