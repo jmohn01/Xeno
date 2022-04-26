@@ -181,7 +181,7 @@ export default class EnemyAI implements BattlerAI {
         let openlist: Array<Nodee>=[];
         let closedlist: Array<Nodee>=[];
         const floor = this.level.getFloor();
-        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos);, f: 0, g: 0, h: 0}; 
+        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos), f: 0, g: 0, h: 0}; 
         const startnodee : Nodee = {tileposition: floor.getColRowAt(this.owner.position), f: 0, g: 0, h: 0}; 
         openlist.push(startnodee);
         while (openlist.length !=0){
