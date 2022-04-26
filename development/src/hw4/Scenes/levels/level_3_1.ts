@@ -3,7 +3,7 @@ import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import xeno_level from "../xeno_level";
 
 export default class level_1_1 extends xeno_level {
-    level: string = '1_1';
+    level: string = '3_1';
 
     loadScene(): void {
         this.load.tilemap("level", "xeno_assets/map/map_3_1.json");
