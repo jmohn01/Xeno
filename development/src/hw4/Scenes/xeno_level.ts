@@ -19,7 +19,7 @@ import EnemyAI from "../AI/EnemyAI";
 import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { CANVAS_SIZE, GRADE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
+import { CANVAS_SIZE, ENEMY_NAME, ENEMY_TYPE, GRADE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
@@ -33,10 +33,10 @@ export type LevelState = {
     selected: BattlerAI & Upgradeable,
     gold: number,
     currentWave: number,
-    maxWave: number
+    maxWave: number,
+    currentWaveEnemy: number,
+    aliveEnemies: number
 }
-
-const PassiveGrey = new Color(196, 196, 196);
 
 
 export default class xeno_level extends Scene {
@@ -46,15 +46,18 @@ export default class xeno_level extends Scene {
         selected: null,
         gold: 0,
         currentWave: 0,
-        maxWave: 0
+        maxWave: 0,
+        currentWaveEnemy: 0,
+        aliveEnemies: 0
     }
 
-    
+    protected level: String;
+
     private floor: OrthogonalTilemap;
-    
+
     private base: AnimatedSprite;
-    
-    private spawns: Array<Sprite> = new Array(); 
+
+    private spawns: Array<Sprite> = new Array();
 
     private deadWalls: Array<AnimatedSprite> = new Array();
 
@@ -74,14 +77,18 @@ export default class xeno_level extends Scene {
 
     private UI: Layer;
 
+    private waveTimer: Timer;
+
+    private spawnTimer: Timer;
+
     /* ------------------------------- ENTITY DATA ------------------------------ */
-    private trapData: Object;
+    private trapData: any;
 
-    private wallData: Object;
+    private wallData: any;
 
-    private turretData: Object;
+    private turretData: any;
 
-    private enemyData: Object;
+    private enemyData: any;
 
     private levelData: any;
 
@@ -91,7 +98,9 @@ export default class xeno_level extends Scene {
 
     private selectionHighlight: AnimatedSprite;
 
-    private costLabel: Label;
+    private placingCostLabel: Label;
+
+    private upgradeCostLabel: Label;
 
     private hpLabel: Label;
 
@@ -117,12 +126,11 @@ export default class xeno_level extends Scene {
 
 
     loadScene(): void {
-        this.load.tilemap("level", "xeno_assets/map/test_map.json");
         this.load.spritesheet("base", "xeno_assets/spritesheets/generator.json");
         this.load.spritesheet("walls", "xeno_assets/spritesheets/walls.json");
         this.load.spritesheet("traps", "xeno_assets/spritesheets/traps.json");
         this.load.spritesheet("turret", "xeno_assets/spritesheets/turret.json");
-        this.load.spritesheet("uma", "xeno_assets/spritesheets/uma.json")
+        this.load.spritesheet("enemy", "xeno_assets/spritesheets/enemy.json")
         this.load.spritesheet("slice", "hw4_assets/spritesheets/slice.json")
         this.load.spritesheet("highlight", "xeno_assets/spritesheets/highlight.json");
         this.load.image("ingame_ui", "xeno_assets/images/ingame_ui.png");
@@ -134,23 +142,38 @@ export default class xeno_level extends Scene {
         this.load.object("levelData", "xeno_assets/data/level_data.json");
     }
 
+    unloadScene(): void {
+        this.resourceManager.keepSpritesheet("base");
+        this.resourceManager.keepSpritesheet("walls");
+        this.resourceManager.keepSpritesheet("traps");
+        this.resourceManager.keepSpritesheet("turret");
+        this.resourceManager.keepSpritesheet("enemy");
+        this.resourceManager.keepSpritesheet("slice");
+        this.resourceManager.keepSpritesheet("highlight");
+
+        this.resourceManager.keepObject('trapData');
+        this.resourceManager.keepObject('enemyData');
+        this.resourceManager.keepObject('levelData');
+        this.resourceManager.keepObject('turretData');
+        this.resourceManager.keepObject('wallData');
+    }
+
     startScene(): void {
 
         this.initUI();
         this.initData();
-        
+
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
-        
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
         let tilemapSize = this.floor.size.scaled(1);
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
-        
+
         this.addLayer("primary", 10);
-        
+
         this.placeBase(new Vec2(672, 352));
-        
+
         this.battleManager = new BattleManager(this);
-        
+
         this.receiver.subscribe([
             XENO_EVENTS.WALL_DIED,
             XENO_EVENTS.TURRET_DIED,
@@ -158,16 +181,14 @@ export default class xeno_level extends Scene {
             XENO_EVENTS.UNLOAD_ASSET,
             XENO_EVENTS.TRIGGER_TRAP,
             XENO_EVENTS.ERROR,
+            XENO_EVENTS.SPAWN_NEXT_WAVE
         ])
-        this.initLevel();
-        this.updateLevelUI();
-    
     }
 
-    addLabelAt(position: Vec2, text: string, color: Color, fontSize: number): Label {
+    addLabelAt(position: Vec2, text: string, color: Color, fontSize: number, font: string = 'CaveatBrush'): Label {
         const lb = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: position, text: text });
         lb.textColor = color;
-        lb.font = 'CaveatBrush';
+        lb.font = font;
         lb.fontSize = fontSize;
         return lb;
     }
@@ -180,25 +201,26 @@ export default class xeno_level extends Scene {
 
         this.goldLabel = this.addLabelAt(UI_POSITIONS.SLOT_MONEY, '0', Color.BLACK, 32);
         this.waveLabel = this.addLabelAt(UI_POSITIONS.SLOT_STATUS, '0 / 4', Color.BLACK, 32);
-        this.placingLable = this.addLabelAt(UI_POSITIONS.PLACING_LABEL, 'Placing:', Color.BLACK, 32);
-        this.selectingLable = this.addLabelAt(UI_POSITIONS.SELECTING_LABEL, 'Selecting:', Color.BLACK, 32);
+        this.placingLable = this.addLabelAt(UI_POSITIONS.PLACING_LABEL, 'Placing:', Color.BLACK, 32, 'Roboto');
+        this.selectingLable = this.addLabelAt(UI_POSITIONS.SELECTING_LABEL, 'Selecting:', Color.BLACK, 32, 'Roboto');
 
-        this.errorLabel = this.addLabelAt(UI_POSITIONS.ERROR_LABEL, '100', Color.RED, 32);
+        this.errorLabel = this.addLabelAt(UI_POSITIONS.ERROR_LABEL, '', Color.RED, 32, 'Roboto');
 
-        this.costLabel = this.addLabelAt(UI_POSITIONS.COST_LABEL, '5000', XENO_COLOR.ORANGE, 32);
-        this.hpLabel = this.addLabelAt(UI_POSITIONS.HP_LABEL, '100', XENO_COLOR.GREEN, 32);
-        this.armorLabel = this.addLabelAt(UI_POSITIONS.ARMOR_LABEL, '100', XENO_COLOR.GREEN, 32);
-        this.atkLabel = this.addLabelAt(UI_POSITIONS.ATK_LABEL, '100', XENO_COLOR.BLUE, 32);
-        this.rangeLabel = this.addLabelAt(UI_POSITIONS.RANGE_LABEL, '100', XENO_COLOR.BLUE, 32);
-        this.fireLabel = this.addLabelAt(UI_POSITIONS.FIRE_LABEL, '2.5/tick 4', XENO_COLOR.PURPLE, 27.4936);
-        this.slowLabel = this.addLabelAt(UI_POSITIONS.SLOW_LABEL, '30% 5s', XENO_COLOR.PURPLE, 27.4936);
-        this.acidLabel = this.addLabelAt(UI_POSITIONS.ACID_LABEL, '-2.5 4s', XENO_COLOR.PURPLE, 27.4936);
+        this.placingCostLabel = this.addLabelAt(UI_POSITIONS.PLACING_COST_LABEL, '/', XENO_COLOR.ORANGE, 32);
+        this.upgradeCostLabel = this.addLabelAt(UI_POSITIONS.UPGRADE_COST_LABEL, '/', XENO_COLOR.ORANGE, 32);
+        this.hpLabel = this.addLabelAt(UI_POSITIONS.HP_LABEL, '/', XENO_COLOR.GREEN, 32);
+        this.armorLabel = this.addLabelAt(UI_POSITIONS.ARMOR_LABEL, '/', XENO_COLOR.GREEN, 32);
+        this.atkLabel = this.addLabelAt(UI_POSITIONS.ATK_LABEL, '/', XENO_COLOR.BLUE, 32);
+        this.rangeLabel = this.addLabelAt(UI_POSITIONS.RANGE_LABEL, '/', XENO_COLOR.BLUE, 32);
+        this.fireLabel = this.addLabelAt(UI_POSITIONS.FIRE_LABEL, '/', XENO_COLOR.PURPLE, 27.4936);
+        this.slowLabel = this.addLabelAt(UI_POSITIONS.SLOW_LABEL, '/', XENO_COLOR.PURPLE, 27.4936);
+        this.acidLabel = this.addLabelAt(UI_POSITIONS.ACID_LABEL, '/', XENO_COLOR.PURPLE, 27.4936);
 
 
         this.selectionHighlight = this.add.animatedSprite("highlight", "UI");
         this.selectionHighlight.animation.playIfNotAlready("IDLE", true);
         this.updateLevelUI();
-        // this.updateSelectedUI();
+        this.updateSelectedUI();
     }
 
     initData() {
@@ -209,14 +231,18 @@ export default class xeno_level extends Scene {
         this.levelData = this.load.getObject('levelData')
     }
 
-    initLevel() {
-        this.levelData = this.levelData['1_1'];
+    initLevel(lvl: string) {
+        this.levelData = this.levelData[lvl];
         this.state.gold = this.levelData["gold"];
-        this.spawns = this.levelData.spawns.map((e: {x: number, y: number}) => {
+        this.spawns = this.levelData.spawns.map((e: { x: number, y: number }) => {
             const cave = this.add.sprite('cave', 'primary');
             cave.position = new Vec2(e.x, e.y).mult(new Vec2(32, 32));
-            return cave; 
+            return cave;
         })
+        this.state.aliveEnemies = this.levelData.waves.reduce((prev: number[], current: number[]) => {
+            return prev.length + current.length; 
+        })
+        this.state.maxWave = this.levelData.waves.length; 
         console.log(this.levelData);
     }
 
@@ -243,20 +269,30 @@ export default class xeno_level extends Scene {
                 break;
             case XENO_EVENTS.ENEMY_DIED:
                 const deadEnemy = event.data.get('owner');
-                console.log("DEAD ENEMY: %d", deadEnemy.id);
+                this.state.aliveEnemies--;
+                if (!this.state.aliveEnemies) {
+                    this.emitter.fireEvent(XENO_EVENTS.GAME_OVER, {won: true});
+                }
                 this.aliveEnemies = this.aliveEnemies.filter((e) => e.id != deadEnemy.id);
                 this.deadEnemies.push(deadEnemy);
                 break;
             case XENO_EVENTS.GAME_OVER:
+                console.log(event.data.get('won'));
                 break;
             case XENO_EVENTS.TRIGGER_TRAP:
-
                 const node = this.sceneGraph.getNode(event.data.get("node"));
                 const other = this.sceneGraph.getNode(event.data.get("other"));
-
                 const trapAI = (node.ai instanceof TrapAI ? node.ai : other.ai as TrapAI);
-
                 trapAI.attack();
+                break;
+            case XENO_EVENTS.SPAWN_NEXT_WAVE:
+                this.state.currentWave++;
+                this.state.currentWaveEnemy = 0;
+                if (this.state.currentWave === this.state.maxWave) {
+                    return;
+                }
+                this.spawnWave(); 
+                break; 
         }
     }
 
@@ -291,10 +327,82 @@ export default class xeno_level extends Scene {
 
         if (Input.isMouseJustPressed(2)) {
             this.state.placing = null;
-            this.state.selected = null; 
+            this.state.selected = null;
             this.updateSelectedUI();
             this.placingLable.text = 'Placing: ';
         }
+
+        if (Input.isKeyJustPressed('\'')) {
+            console.log("INFINITE HEALTH");
+            (this.base.ai as BattlerAI).health = 1 << 30; 
+        }
+
+        if (Input.isKeyJustPressed(':')) {
+            console.log("INFINITE MONEY");
+            this.state.gold = 1 << 30;
+            this.updateLevelUI();
+        }
+    }
+
+    updateSelectedUI() {
+        if (!this.state.selected) {
+            this.atkLabel.visible = false;
+            this.hpLabel.visible = false;
+            this.selectionHighlight.visible = false;
+            this.selectingLable.text = 'Selecting: ';
+            return;
+        }
+        const friendAI = this.state.selected;
+        this.selectionHighlight.position = friendAI.owner.position;
+        this.hpLabel.text = friendAI.health ? friendAI.health.toString() : '/';
+        this.armorLabel.text = friendAI.armor ? friendAI.armor.toString() : '/';
+        this.atkLabel.text = friendAI.atk ? friendAI.atk.damage.toString() : '/';
+        this.rangeLabel.text = friendAI.range ? friendAI.range.toString() : '/';
+
+        const atkEffect = friendAI.atk ? friendAI.atk.effects : {};
+        this.fireLabel.text = atkEffect.fire ? `${atkEffect.fire.damage}/tick ${atkEffect.fire.ticks}t` : '/';
+        this.slowLabel.text = atkEffect.slow ? `-${((1 - atkEffect.slow.percent) * 100).toFixed(1)}% ${atkEffect.slow.duration / 1000}s` : '/';
+        this.acidLabel.text = atkEffect.acid ? `-${atkEffect.acid.reduction} ${atkEffect.acid.duration / 1000}s` : '/';
+        this.atkLabel.visible = true;
+        this.hpLabel.visible = true;
+        this.selectionHighlight.visible = true;
+
+        console.log(friendAI);
+
+        //@ts-ignore
+        this.selectingLable.text = `Selecting: ${this.getTooltip(friendAI.type)}`
+
+        //@ts-ignore
+        const upgradeCost = friendAI.upgradeCost;
+        if (upgradeCost) {
+            this.upgradeCostLabel.text = upgradeCost.toString();
+        } else {
+            this.upgradeCostLabel.text = '/';
+        }
+    }
+
+    updatePlacingUI() {
+        if (!this.state.placing) {
+            this.placingCostLabel.visible = false;
+            this.placingLable.text = 'Placing: ';
+            return;
+        }
+        this.placingLable.text = `Placing: ${this.getTooltip(this.state.placing)}`;
+        if (this.state.placing === 'WALL') {
+            this.placingCostLabel.text = this.wallData.placingCost.toString();
+        } else if ((<any>Object).values(TURRET_TYPE).includes(this.state.placing)) {
+            this.placingCostLabel.text = this.turretData[this.state.placing].placingCost.toString();
+        } else if ((<any>Object).values(TRAP_TYPE).includes(this.state.placing)) {
+            this.placingCostLabel.text = this.trapData[this.state.placing].placingCost.toString();
+        } else {
+            this.placingCostLabel.text = '/';
+        }
+        this.placingCostLabel.visible = true;
+    }
+
+    updateLevelUI() {
+        this.goldLabel.text = `${this.state.gold}`;
+        this.waveLabel.text = `${this.state.currentWave} / ${this.state.maxWave}`;
     }
 
 
@@ -311,7 +419,14 @@ export default class xeno_level extends Scene {
         }
         this.state.selected = null;
         this.updateSelectedUI();
+
         let spawnedAI: BattlerAI & Upgradeable;
+        let placingCost = parseInt(this.placingCostLabel.text);
+        if (placingCost && placingCost > this.state.gold) {
+            this.errorLabel.text = 'Not enough money!'
+            return;
+
+        }
         switch (this.state.placing) {
             case TRAP_TYPE.ACID:
             case TRAP_TYPE.NET:
@@ -329,11 +444,15 @@ export default class xeno_level extends Scene {
                 spawnedAI = this.placeWall(clickColRow);
                 break;
             case 'ENEMY':
-                this.placeEnemey(clickColRow);
+                this.placeEnemey(clickColRow, ENEMY_TYPE.BASIC);
                 break;
         }
         if (spawnedAI) {
             console.log(spawnedAI);
+            if (placingCost) {
+                this.state.gold -= placingCost;
+                this.updateLevelUI();
+            }
             this.state.selected = spawnedAI;
             this.updateSelectedUI();
         }
@@ -382,16 +501,16 @@ export default class xeno_level extends Scene {
                 console.log("2,6 Speed Up");
             }
         }
-        //@ts-ignore
+
         if (this.levelData.friendAllowed.indexOf(newPlacing) === -1) {
             this.errorLabel.text = 'Technology is not unlocked!'
             this.state.placing = null;
-            this.placingLable.text = 'Placing: ';
-            return; 
+            this.updatePlacingUI();
+            return;
         }
         this.errorLabel.text = '';
         this.state.placing = newPlacing;
-        this.placingLable.text = `Placing: ${this.getTooltip(this.state.placing)}`
+        this.updatePlacingUI();
     }
 
     selectFriend(tilePosition: Vec2) {
@@ -409,44 +528,18 @@ export default class xeno_level extends Scene {
     }
 
     upgradeFriend() {
-        console.log("UPGRADE");
         if (this.state.selected) {
+            const cost = this.state.selected.upgradeCost;
+            if (cost && cost > this.state.gold) {
+                this.errorLabel.text = 'Error: Not enough money';
+                return;
+            }
             this.state.selected.upgrade();
             this.updateSelectedUI();
+            this.updateLevelUI();
         }
     }
 
-    updateSelectedUI() {
-        if (!this.state.selected) {
-            this.atkLabel.visible = false;
-            this.hpLabel.visible = false;
-            this.selectionHighlight.visible = false;
-            this.selectingLable.text = 'Selecting: '; 
-            return;
-        }
-        const friendAI = this.state.selected;
-        this.selectionHighlight.position = friendAI.owner.position;
-        this.hpLabel.text = friendAI.health ? friendAI.health.toString() : '/';
-        this.armorLabel.text = friendAI.armor ? friendAI.armor.toString() : '/';
-        this.atkLabel.text = friendAI.atk ? friendAI.atk.damage.toString() : '/';
-        this.rangeLabel.text = friendAI.range ? friendAI.range.toString() : '/';
-
-        const atkEffect = friendAI.atk ? friendAI.atk.effects : {};
-        this.fireLabel.text = atkEffect.fire ? `${atkEffect.fire.damage}/tick ${atkEffect.fire.ticks}t` : '/';
-        this.slowLabel.text = atkEffect.slow ? `-${((1 - atkEffect.slow.percent) * 100).toFixed(1)}% ${atkEffect.slow.duration / 1000}s` : '/';
-        this.acidLabel.text = atkEffect.acid ? `-${atkEffect.acid.reduction} ${atkEffect.acid.duration / 1000}s` : '/';
-        this.atkLabel.visible = true;
-        this.hpLabel.visible = true;
-        this.selectionHighlight.visible = true;
-
-        //@ts-ignore
-        this.selectingLable.text = `Selecting: ${this.getTooltip(friendAI.type)}`
-    }
-
-    updateLevelUI() {
-        this.goldLabel.text = `${this.state.gold}`;
-        this.waveLabel.text = `${this.state.currentWave} / ${this.state.maxWave}`;
-    }
 
     addLevelGold(inc: number) {
         this.state.gold += inc;
@@ -454,23 +547,29 @@ export default class xeno_level extends Scene {
     }
 
     spawnWave() {
-        this.state.currentWave++;
-        if (this.state.currentWave === this.state.maxWave) {
-            this.emitter.fireEvent(XENO_EVENTS.GAME_OVER, {won: true});
-            return;
-        }
-        const spawn = () => {
-            const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
-            this.placeEnemey(this.floor.getColRowAt(spawnPos));
-        }
-        const spawnTimer = new Timer(1000, spawn, true);
-        const waveTimer = new Timer(1000 * this.levelData.wave[this.state.currentWave])
-        
+        const spawnEnemy = () => {
+            const enemyType = this.levelData.waves[this.state.currentWave][this.state.currentWaveEnemy];
+            console.log(`SPAWNED ${ENEMY_NAME[enemyType]}, currentWaveEnemy: ${this.state.currentWaveEnemy}`);
 
+            const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
+            this.placeEnemey(this.floor.getColRowAt(spawnPos), enemyType);
+            this.state.currentWaveEnemy++; 
+        }
+        this.spawnTimer = new Timer(1000, spawnEnemy, true);
+        const stopTimer = () => {
+            console.log("STOPPED");
+            this.spawnTimer.pause();
+            setTimeout(() => {
+                this.emitter.fireEvent(XENO_EVENTS.SPAWN_NEXT_WAVE); 
+            }, 5000)
+        }
+        this.waveTimer = new Timer(1000 * this.levelData.waves[this.state.currentWave].length, stopTimer); 
+        this.spawnTimer.start();
+        this.waveTimer.start();
+        console.log("RUNNED");
     }
 
-
-
+    
 
     isAnyOverlap(tilePosition: Vec2): AnimatedSprite | Sprite | undefined {
         return this.aliveTurrets.find((e) => this.floor.getColRowAt(e.position).equals(tilePosition)) ||
@@ -481,16 +580,14 @@ export default class xeno_level extends Scene {
             (this.floor.getColRowAt(this.base.position).equals(tilePosition) ? this.base : undefined);
     }
 
-    placeFriend() {
-        console.log("PLACING");
-    }
-
     placeBase(position: Vec2) {
         let base: AnimatedSprite;
         base = this.add.animatedSprite('base', 'primary');
         base.addAI(BaseAI, {
-            health: 1 << 30,
-            armor: 0
+            // @ts-ignore
+            health: this.levelData[this.level]['baseHP'],
+            // @ts-ignore
+            armor: this.levelData[this.level]['baseArmor']
         });
         base.setCollisionShape(new AABB(Vec2.ZERO, base.sizeWithZoom));
         const currColRow = this.floor.getColRowAt(position);
@@ -606,7 +703,8 @@ export default class xeno_level extends Scene {
             });
             turret.setAIActive(true, {});
         }
-        turret.animation.playIfNotAlready(`${type}_IDLE`, true);
+
+        turret.animation.playIfNotAlready(`BRONZE_${type}_IDLE`, true);
 
         turret.visible = true;
         turret.addPhysics();
@@ -614,22 +712,25 @@ export default class xeno_level extends Scene {
         return (turret.ai as BattlerAI & Upgradeable);
     }
 
-    placeEnemey(tilePosition: Vec2) {
+    placeEnemey(tilePosition: Vec2, type: ENEMY_TYPE) {
         console.log(`DEAD ENEMIES: ${this.deadEnemies.map((e) => e.id)}`);
         let enemy = this.deadEnemies.pop();
-
+        console.log(ENEMY_NAME[type]);
         if (!enemy) {
-            enemy = this.add.animatedSprite("uma", "primary");
+            enemy = this.add.animatedSprite("enemy", "primary");
             enemy.addAI(EnemyAI, {
-                health: 30,
-                BasePos: this.base.position,
-                SpawnPos: tilePosition.clone().mult(new Vec2(32, 32)),
+                ...this.getEnemyData(type),
+                basePos: this.base.position,
+                spawnPos: tilePosition.clone().mult(new Vec2(32, 32)),
                 level: this,
-                battleManager: this.battleManager
+                battleManager: this.battleManager,
+                type: type
             });
+        } else {
+            (enemy.ai as EnemyAI).setNewStats(this.getEnemyData(type));
         }
-        (enemy.ai as EnemyAI).health = 30;
-        enemy.animation.playIfNotAlready("IDLE", true);
+        
+        enemy.animation.playIfNotAlready(`${ENEMY_NAME[type]}_MOVE`, true);
         enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
         enemy.addPhysics();
@@ -697,6 +798,10 @@ export default class xeno_level extends Scene {
         }
     }
 
+    removeEnemy(id: number): void {
+        this.aliveEnemies.filter((e) => e.id !== id); 
+    }
+
     getWallData(type: WALL_TYPE) {
         //@ts-ignore
         return this.wallData[type];
@@ -714,38 +819,43 @@ export default class xeno_level extends Scene {
         return this.turretData[type][grade];
     }
 
-    getTooltip(type: TURRET_TYPE | WALL_TYPE | TRAP_TYPE | 'ENEMY' | 'WALL') {
-        switch (type) {
-            case 'ENEMY':
-                return `UMA: Most basic meele uma.`
-            case 'WALL':
-            case WALL_TYPE.DIRT:
-                return `Dirt wall: Minecraft wall. Can't really defend. DIRT cheap.`
-            case WALL_TYPE.WOOD:
-                return `Wood wall: Viking technology. It seems to offer little protection.`
-            case WALL_TYPE.STONE:
-                return `Stone wall: Stone age! UMAs cannot get through now.`
-            case WALL_TYPE.FIBER:
-                return `Fiber wall: ⏃⌰⟟⟒⋏ ⏁⟒☊⊑⋏⍜⌰⍜☌⊬`
-            case TRAP_TYPE.FIRE:
-                return `Fire trap: BURN THEM ALIVE!`
-            case TRAP_TYPE.FROST:
-                return `Frost trap: Frost Nova! Lvl3 mage ability.`
-            case TRAP_TYPE.NET:
-                return `NET TRAP: Spiderman! Spiderman!`
-            case TRAP_TYPE.ACID:
-                return `Acid trap: Vat of acid is a good idea.`
-            case TURRET_TYPE.BEAM:
-                return `BEAM TURRET: Not bad at anything. Not good at anything either.`
-            case TURRET_TYPE.ELECTRIC:
-                return `ELECTRIC TURRET: Only if Tesla could see this alive.`
-            case TURRET_TYPE.ROCKET:
-                return `ROCKET TURRET: Bombard your enemy with rocket barrage.`
-            case TURRET_TYPE.BANK:
-                return `BANK: Mysterious money printing machine (literally).`
-        }
+    getEnemyData(type: ENEMY_TYPE) {
+        return this.enemyData[ENEMY_NAME[type]];
     }
 
+    getTooltip(type: TURRET_TYPE | WALL_TYPE | TRAP_TYPE | 'ENEMY' | 'WALL' | 'BASE') {
+        switch (type) {
+            case 'BASE':
+                return 'Generator: Protect this well.'
+            case 'ENEMY':
+                return 'UMA: Most basic meele uma.'
+            case 'WALL':
+            case WALL_TYPE.DIRT:
+                return 'Dirt wall: Minecraft wall. Can\'t really defend. DIRT cheap.'
+            case WALL_TYPE.WOOD:
+                return 'Wood wall: Viking technology. It seems to offer little protection.'
+            case WALL_TYPE.STONE:
+                return 'Stone wall: Stone age! UMAs cannot get through now.'
+            case WALL_TYPE.FIBER:
+                return 'Fiber wall: ⏃⌰⟟⟒⋏ ⏁⟒☊⊑⋏⍜⌰⍜☌⊬'
+            case TRAP_TYPE.FIRE:
+                return 'Fire trap: BURN THEM ALIVE!'
+            case TRAP_TYPE.FROST:
+                return 'Frost trap: Frost Nova! Lvl3 mage ability.'
+            case TRAP_TYPE.NET:
+                return 'NET TRAP: Spiderman! Spiderman!'
+            case TRAP_TYPE.ACID:
+                return 'Acid trap: Vat of acid is a good idea.'
+            case TURRET_TYPE.BEAM:
+                return 'BEAM TURRET: Not bad at anything. Not good at anything either.'
+            case TURRET_TYPE.ELECTRIC:
+                return 'ELECTRIC TURRET: Only if Tesla could see this alive.'
+            case TURRET_TYPE.ROCKET:
+                return 'ROCKET TURRET: Bombard your enemy with rocket barrage.'
+            case TURRET_TYPE.BANK:
+                return 'BANK: Mysterious money printing machine (literally).'
+        }
+    }
 
     getFloor() {
         return this.floor;

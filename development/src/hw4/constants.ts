@@ -27,6 +27,15 @@ export enum TURRET_TYPE {
     BANK = "BANK"
 }
 
+export enum ENEMY_TYPE {
+    BASIC,
+    FAST,
+    TANK
+}
+
+
+export const ENEMY_NAME = ['BASIC', 'FAST', 'TANK']
+
 export enum GRADE {
     BRONZE = 'BRONZE',
     SILVER = 'SILVER',
@@ -44,7 +53,8 @@ export enum XENO_EVENTS {
     GAME_OVER = "GAME_OVER",
     EFFECT_END = "EFFECT_END",
     TRIGGER_TRAP = "TRIGGER_TRAP",
-    UPGRADE = "UPGRADE"
+    UPGRADE = "UPGRADE",
+    SPAWN_NEXT_WAVE = "SPAWN_NEXT_WAVE"
 }
 
 export enum XENO_EFFECT_TYPE {
@@ -74,14 +84,15 @@ export const UI_POSITIONS = {
     SLOT_MONEY: new Vec2(1500, 40),
     SLOT_STATUS: new Vec2(1488, 120),
     UPGRADE_BUTTON: {
-        TOP_LEFT: new Vec2(60, 772),
-        BOT_RIGHT: new Vec2(425, 862)
+        TOP_LEFT: new Vec2(52.5, 713),
+        BOT_RIGHT: new Vec2(419.5, 865)
     },
     SELECTING_LABEL: new Vec2(700, 50),
     PLACING_LABEL: new Vec2(700, 100),
     ERROR_LABEL: new Vec2(700, 150),
 
-    COST_LABEL: new Vec2(600, 795),
+    PLACING_COST_LABEL: new Vec2(600, 751),
+    UPGRADE_COST_LABEL: new Vec2(600, 832),
     HP_LABEL: new Vec2(826, 766),
     ARMOR_LABEL: new Vec2(826, 824),
     ATK_LABEL: new Vec2(1064, 762),
@@ -91,9 +102,6 @@ export const UI_POSITIONS = {
     ACID_LABEL: new Vec2(1277, 840),
 }
 
-
-
-
 export const XENO_LEVEL_PHYSICS_OPTIONS = {
     groupNames: [XENO_ACTOR_TYPE.TRAP, XENO_ACTOR_TYPE.ENEMY],
     collisions: [
@@ -101,3 +109,5 @@ export const XENO_LEVEL_PHYSICS_OPTIONS = {
         [1, 0]
     ]
 }
+
+

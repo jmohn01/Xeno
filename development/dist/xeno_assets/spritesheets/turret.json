@@ -3,41 +3,105 @@
     "spriteSheetImage": "turret.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
-    "columns": 4,
-    "rows": 4,
+    "columns": 7,
+    "rows": 7,
     "durationType": "time",
     "animations": [
         { 
-            "name": "ROCKET_IDLE",
+            "name": "BRONZE_ROCKET_IDLE",
             "frames": [ {"index": 0, "duration": 600} ]
         },
         { 
-            "name": "ROCKET_ATK",
+            "name": "BRONZE_ROCKET_ATK",
             "frames": [ {"index": 1, "duration": 20}, {"index": 2, "duration": 20}, {"index": 3, "duration": 20} ]
         },
         { 
-            "name": "ELECTRIC_IDLE",
+            "name": "SILVER_ROCKET_IDLE",
             "frames": [ {"index": 4, "duration": 600} ]
         },
         { 
-            "name": "ELECTRIC_ATK",
+            "name": "SILVER_ROCKET_ATK",
             "frames": [ {"index": 5, "duration": 20}, {"index": 6, "duration": 20}, {"index": 7, "duration": 20} ]
         },
         { 
-            "name": "BEAM_IDLE",
+            "name": "GOLD_ROCKET_IDLE",
             "frames": [ {"index": 8, "duration": 600} ]
         },
         { 
-            "name": "BEAM_ATK",
+            "name": "GOLD_ROCKET_ATK",
             "frames": [ {"index": 9, "duration": 20}, {"index": 10, "duration": 20}, {"index": 11, "duration": 20} ]
         },
         { 
-            "name": "BANK_IDLE",
+            "name": "BRONZE_ELECTRIC_IDLE",
             "frames": [ {"index": 12, "duration": 600} ]
         },
         { 
-            "name": "BANK_ATK",
+            "name": "BRONZE_ELECTRIC_ATK",
             "frames": [ {"index": 13, "duration": 20}, {"index": 14, "duration": 20}, {"index": 15, "duration": 20} ]
+        },
+        { 
+            "name": "SILVER_ELECTRIC_IDLE",
+            "frames": [ {"index": 16, "duration": 600} ]
+        },
+        { 
+            "name": "SILVER_ELECTRIC_ATK",
+            "frames": [ {"index": 17, "duration": 20}, {"index": 18, "duration": 20}, {"index": 19, "duration": 20} ]
+        },
+        { 
+            "name": "GOLD_ELECTRIC_IDLE",
+            "frames": [ {"index": 20, "duration": 600} ]
+        },
+        { 
+            "name": "GOLD_ELECTRIC_ATK",
+            "frames": [ {"index": 21, "duration": 20}, {"index": 22, "duration": 20}, {"index": 23, "duration": 20} ]
+        },
+        { 
+            "name": "BRONZE_BEAM_IDLE",
+            "frames": [ {"index": 24, "duration": 600} ]
+        },
+        { 
+            "name": "BRONZE_BEAM_ATK",
+            "frames": [ {"index": 25, "duration": 20}, {"index": 26, "duration": 20}, {"index": 27, "duration": 20} ]
+        },
+        { 
+            "name": "SILVER_BEAM_IDLE",
+            "frames": [ {"index": 28, "duration": 600} ]
+        },
+        { 
+            "name": "SILVER_BEAM_ATK",
+            "frames": [ {"index": 29, "duration": 20}, {"index": 30, "duration": 20}, {"index": 31, "duration": 20} ]
+        },
+        { 
+            "name": "GOLD_BEAM_IDLE",
+            "frames": [ {"index": 32, "duration": 600} ]
+        },
+        { 
+            "name": "GOLD_BEAM_ATK",
+            "frames": [ {"index": 33, "duration": 20}, {"index": 34, "duration": 20}, {"index": 35, "duration": 20} ]
+        },
+        { 
+            "name": "BRONZE_BANK_IDLE",
+            "frames": [ {"index": 36, "duration": 600} ]
+        },
+        { 
+            "name": "BRONZE_BANK_ATK",
+            "frames": [ {"index": 37, "duration": 20}, {"index": 38, "duration": 20}, {"index": 39, "duration": 20} ]
+        },
+        { 
+            "name": "SILVER_BANK_IDLE",
+            "frames": [ {"index": 40, "duration": 600} ]
+        },
+        { 
+            "name": "SILVER_BANK_ATK",
+            "frames": [ {"index": 41, "duration": 20}, {"index": 42, "duration": 20}, {"index": 43, "duration": 20} ]
+        },
+        { 
+            "name": "GOLD_BANK_IDLE",
+            "frames": [ {"index": 44, "duration": 600} ]
+        },
+        { 
+            "name": "GOLD_BANK_ATK",
+            "frames": [ {"index": 45, "duration": 20}, {"index": 46, "duration": 20}, {"index": 47, "duration": 20} ]
         }
     ]
 }

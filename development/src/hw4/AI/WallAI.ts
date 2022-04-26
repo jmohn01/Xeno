@@ -40,6 +40,8 @@ export default class WallAI implements BattlerAI, Upgradeable {
     emitter: Emitter = new Emitter();
     receiver: Receiver = new Receiver();
 
+    upgradeCost: number | undefined;
+
 
     damage(damage: number): void {
         if (this.health <= 0) {
@@ -60,9 +62,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { health, armor, type, level, leftTile, rightTile, botTile, topTile } = options;
+        const { health, armor, upgradeCost, type, level, leftTile, rightTile, botTile, topTile } = options;
         this.health = health;
         this.armor = armor;
+        this.upgradeCost = upgradeCost; 
         this.type = type;
         this.level = level; 
         this.neighboringWall[NEIGHBOR.LEFT] = leftTile;
@@ -116,9 +119,10 @@ export default class WallAI implements BattlerAI, Upgradeable {
                 this.emitter.fireEvent(XENO_EVENTS.ERROR, { message: 'This cannot be upgraded' })
                 return;
         }
-        const { health, armor } = this.level.getWallData(newType);
+        const { health, armor, upgradeCost } = this.level.getWallData(newType);
         this.health = health;
         this.armor = armor;
+        this.upgradeCost = upgradeCost; 
         this.type = newType;
         this.owner.animation.play(`${this.type}_${this.shape}`, true);
     }

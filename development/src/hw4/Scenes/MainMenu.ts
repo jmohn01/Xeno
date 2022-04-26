@@ -7,6 +7,8 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { CANVAS_SIZE, XENO_COLOR, XENO_LEVEL_PHYSICS_OPTIONS } from "../constants";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import xeno_level from "./xeno_level";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import level_1_1 from "./levels/level_1_1";
 
 const PADDING = 100;
 
@@ -19,11 +21,16 @@ export default class MainMenu extends Scene {
     private help: Layer; 
 
     loadScene() {
+        this.load.audio("music", "xeno_assets/audio/menu.mp3")
         this.load.image("background", "xeno_assets/images/background.png")
         this.load.image("leftclick", "xeno_assets/images/light/mouse_left_key_light.png")
         this.load.image("ESC", "xeno_assets/images/light/esc_key_light.png")
         this.load.image("semicolon", "xeno_assets/images/light/semicolon_key_light.png")
         this.load.image("quote", "xeno_assets/images/light/quote_key_light.png")
+    }
+
+    unloadScene() {
+        this.resourceManager.unloadAllResources();
     }
 
     startScene() {
@@ -182,7 +189,7 @@ export default class MainMenu extends Scene {
         helpBackBtn.size.set(200, 50);
         helpBackBtn.onClickEventId = "main";
 
-
+        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: 'music', loop: true, holdReference: true}); 
     }
 
     updateScene() {
@@ -208,7 +215,8 @@ export default class MainMenu extends Scene {
                     const sceneOptions = {
                         physics: XENO_LEVEL_PHYSICS_OPTIONS
                     }
-                    this.sceneManager.changeToScene(xeno_level, {}, sceneOptions); 
+                    this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: 'music'});
+                    this.sceneManager.changeToScene(level_1_1, {}, sceneOptions); 
             }
         }
     }

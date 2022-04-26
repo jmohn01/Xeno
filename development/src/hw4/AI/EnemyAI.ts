@@ -6,10 +6,12 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import Color from "../../Wolfie2D/Utils/Color";
-import { XENO_EVENTS } from "../constants";
+import { ENEMY_NAME, ENEMY_TYPE, XENO_EVENTS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import PointAttack from "../GameSystems/Attack/PointAttack";
+import { EmptyAnimation } from "../GameSystems/AttackAnimation/EmptyAnimation";
 import { SliceAnimation } from "../GameSystems/AttackAnimation/SliceAnimation";
+import BattleManager from "../GameSystems/BattleManager";
 import { Effect } from "../GameSystems/Effect/Effect";
 import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
@@ -47,8 +49,8 @@ export default class EnemyAI implements BattlerAI {
     speed: number = 20;
 
     // The current known position of the player
-    BasePos: Vec2;
-    SpawnPos: Vec2;
+    basePos: Vec2;
+    spawnPos: Vec2;
 
     // Attack range
     inRange: number;
@@ -56,25 +58,25 @@ export default class EnemyAI implements BattlerAI {
     // Path to player
     path: Array<Vec2> = [];
 
+    reward: number; 
+
+    type: ENEMY_TYPE;
+
     currentPath: NavigationPath;
 
+    battleManager: BattleManager; 
+
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
-
         this.owner = owner;
-
-        this.maxHealth = options.health;
-
-        this.health = options.health;
-
-        this.BasePos = options.BasePos;
-
-        this.SpawnPos = options.SpawnPos;
-
+        const { basePos, spawnPos, battleManager, level, type } = options; 
+    
+        this.level = level;
+        this.type = type;
+        this.basePos = basePos;
+        this.spawnPos = spawnPos;
+        this.battleManager = battleManager; 
         this.currentPath = this.getNextPath();
-
-        this.atk = new PointAttack(10, 300, new SliceAnimation(Color.BLACK), {}, options.battleManager);
-
-        this.level = options.level;
+        this.setNewStats(options); 
     }
 
     activate(options: Record<string, any>): void { }
@@ -90,12 +92,24 @@ export default class EnemyAI implements BattlerAI {
             this.effects.forEach((e) => {
                 e.endEffect();
             })
-            console.log(this.effects);
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
-            this.owner.visible = false;
-            this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner })
+            this.level.removeEnemy(this.owner.id);
+            this.owner.animation.play(`${ENEMY_NAME[this.type]}_DIED`);
+            setTimeout(() => {
+                this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner, reward: this.reward })
+            }, 250); 
         }
+    }
+
+    setNewStats(data: Record<string, any>): void {
+        console.log(data);
+        const { armor, health, speed, damage, cooldown, reward, atkEffect } = data;
+        this.atk = new PointAttack(damage, cooldown, new EmptyAnimation(), atkEffect, this.battleManager)
+        this.armor = armor;
+        this.health = health;
+        this.speed = speed;
+        this.reward = reward; 
     }
 
     moveOnePath(deltaT: number): void {
@@ -103,9 +117,12 @@ export default class EnemyAI implements BattlerAI {
             this.currentPath = this.getNextPath();
         } else {
             if (this.atkIfPathBlocked()) {
+                if (this.type !== ENEMY_TYPE.TANK)
+                    this.owner.animation.playIfNotAlready(`${ENEMY_NAME[this.type]}_ATK`, true);
                 return;
             }
             else {
+                this.owner.animation.playIfNotAlready(`${ENEMY_NAME[this.type]}_MOVE`, true); 
                 this.owner.moveOnPath(this.speed * deltaT, this.currentPath);
             }
         }
@@ -148,9 +165,9 @@ export default class EnemyAI implements BattlerAI {
     }
 
     findPath() {
-        const turnpoint = new Vec2(this.SpawnPos.x, this.BasePos.y);
+        const turnpoint = new Vec2(this.spawnPos.x, this.basePos.y);
         this.path.push(turnpoint.clone());
-        this.path.push(this.BasePos.clone())
+        this.path.push(this.basePos.clone())
         return;
     }
 

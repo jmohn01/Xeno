@@ -21,14 +21,16 @@ export default class TrapAI implements AI, Upgradeable {
     emitter: Emitter = new Emitter();
     type: TRAP_TYPE; 
     battleManager: BattleManager
+    upgradeCost: number | undefined;
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { color, damage, range, cooldown, atkEffect, level, battleManager, type, grade } = options;
+        const { color, damage, range, cooldown, atkEffect, level, battleManager, type, grade, upgradeCost } = options;
         this.level = level;
         this.range = range;
         this.type = type; 
         this.grade = grade;
+        this.upgradeCost = upgradeCost; 
         this.battleManager = battleManager;
         this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(Color.fromStringHex(color)), atkEffect, battleManager);
     }
@@ -65,10 +67,11 @@ export default class TrapAI implements AI, Upgradeable {
                 this.emitter.fireEvent(XENO_EVENTS.ERROR, {message: 'This cannot be upgraded'});
                 return; 
         }
-        const { color, damage, range, cooldown, atkEffect } = this.level.getTrapData(this.type, newGrade);
+        const { color, damage, range, cooldown, atkEffect, upgradeCost } = this.level.getTrapData(this.type, newGrade);
         this.atk = new AOEAttack(damage, range, cooldown, new SplashAnimation(Color.fromStringHex(color)), atkEffect, this.battleManager);
         this.owner.animation.play(`${this.grade}_${this.type}`, true);
         this.grade = newGrade;
+        this.upgradeCost = upgradeCost;
     }
 
     toString(): string {

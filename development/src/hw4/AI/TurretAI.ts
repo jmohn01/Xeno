@@ -53,6 +53,8 @@ export default class TurretAI implements BattlerAI, Upgradeable {
 
     battleManager: BattleManager;
 
+    upgradeCost: number | undefined;
+
     damage(damage: number) {
         if (this.health <= 0) {
             return;
@@ -100,9 +102,9 @@ export default class TurretAI implements BattlerAI, Upgradeable {
                 if (target) {
                     //@ts-ignore
                     this.atk.attack(this, target, XENO_ACTOR_TYPE.FRIEND);
-                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                    this.playAnimation('ATK');
                 } else {
-                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
+                    this.playAnimation('IDLE');
                 }
             } break;
 
@@ -111,26 +113,29 @@ export default class TurretAI implements BattlerAI, Upgradeable {
                 if (target) {
                     //@ts-ignore
                     this.atk.attack(target.owner.position, this.level.findEnemiesInRange(target.owner.position, this.explosionRange), this.owner.getScene());
-                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                    this.playAnimation('ATK');
                 } else {
-                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
+                    this.playAnimation('IDLE');
                 }
             } break;
             case TURRET_TYPE.ELECTRIC: {
                 const pos = this.owner.position;
                 const targets = this.level.findEnemiesInRange(pos, this.range);
                 if (targets.length !== 0) {
-                    this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
+                    this.playAnimation('ATK'); 
                     //@ts-ignore
                     this.atk.attack(pos, targets, this.owner.getScene());
                 } else {
-                    this.owner.animation.playIfNotAlready(`${this.type}_IDLE`, true);
+                    this.playAnimation('IDLE');
                 }
             } break;
-            case TURRET_TYPE.BANK: {
-                this.owner.animation.playIfNotAlready(`${this.type}_ATK`, true);
-            } break;
+            case TURRET_TYPE.BANK:
+                this.playAnimation('ATK');
         }
+    }
+
+    playAnimation(action: 'IDLE' | 'ATK') {
+        this.owner.animation.playIfNotAlready(`${this.grade}_${this.type}_${action}`, true); 
     }
 
     upgrade(): void {
@@ -155,7 +160,8 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     setNewStats(data: Record<string, any>): void {
-        const { armor, health, color, range, damage, cooldown, atkEffect } = data;
+        console.log(data);
+        const { armor, health, color, range, damage, cooldown, atkEffect, upgradeCost } = data;
         let colorObj: Color;
         if (color)
             colorObj = Color.fromStringHex(color);
@@ -180,6 +186,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
         this.armor = armor;
         this.health = health;
         this.range = range;
+        this.upgradeCost = upgradeCost; 
     }
 
     addEffect(effect: Effect<any>): void {
