@@ -16,7 +16,12 @@ import { Effect } from "../GameSystems/Effect/Effect";
 import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 
-
+type Nodee = {
+    tileposition: Vec2;
+    f: Number;
+    g: Number;
+    h: Number;
+  };
 
 export default class EnemyAI implements BattlerAI {
 
@@ -169,6 +174,28 @@ export default class EnemyAI implements BattlerAI {
         this.path.push(turnpoint.clone());
         this.path.push(this.basePos.clone())
         return;
+    }
+
+    
+    Pathfinding(){
+        let openlist: Array<Nodee>=[];
+        let closedlist: Array<Nodee>=[];
+        const floor = this.level.getFloor();
+        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos);, f: 0, g: 0, h: 0}; 
+        const startnodee : Nodee = {tileposition: floor.getColRowAt(this.owner.position), f: 0, g: 0, h: 0}; 
+        openlist.push(startnodee);
+        while (openlist.length !=0){
+            let currentnodee = openlist[0];
+            let index=0;
+            openlist.forEach(nodee => {
+                if (nodee.f < currentnodee.f){
+                    currentnodee = nodee;
+                }
+                index = index +1;
+            });
+            openlist.splice(index,1);
+            closedlist.push(currentnodee);
+        }
     }
 
     update(deltaT: number) {
