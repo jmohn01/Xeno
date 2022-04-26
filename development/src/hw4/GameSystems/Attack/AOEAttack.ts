@@ -1,5 +1,6 @@
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../../Wolfie2D/Events/Emitter";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
@@ -24,17 +25,22 @@ export default class AOEAttack {
 
     effects: EffectData; 
 
+    soundKey: string;
+
     private cooldownTimer: Timer;
 
     private atkAnimation: AtkAnimation;
 
-    constructor(damage: number, r: number, cooldown: number, atkAnimation: AtkAnimation, effects: EffectData, bm: BattleManager) {
+    emitter: Emitter = new Emitter();
+
+    constructor(damage: number, r: number, cooldown: number, atkAnimation: AtkAnimation, effects: EffectData, bm: BattleManager, soundKey?: string) {
         this.damage = damage;
         this.r = r;
         this.cooldownTimer = new Timer(cooldown);
         this.atkAnimation = atkAnimation; 
         this.effects = effects;
         this.battleManager = bm; 
+        this.soundKey = soundKey; 
     }
 
     attack(from: Vec2, targets: BattlerAI[], scene: Scene): boolean {
@@ -51,6 +57,11 @@ export default class AOEAttack {
         } else if (this.atkAnimation instanceof ExplosionAnimation) {
             this.atkAnimation.doAnimation(from, this.assets); 
         }
+
+        if (this.soundKey) {
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.soundKey, loop: false, holdReference: false });
+        }
+
 
         this.battleManager.handleAOEAtk(targets, this.damage, this.effects); 
 

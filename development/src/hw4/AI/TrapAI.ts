@@ -1,6 +1,7 @@
 import AI from "../../Wolfie2D/DataTypes/Interfaces/AI";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Color from "../../Wolfie2D/Utils/Color";
@@ -37,8 +38,10 @@ export default class TrapAI implements AI, Upgradeable {
 
     attack(): void {
         const targets = this.level.findEnemiesInRange(this.owner.position, this.range); 
-        if (targets)
+        if (targets) {
             this.atk.attack(this.owner.position, targets, this.owner.getScene());
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.type, loop: false, holdReference: false})
+        }
     }
 
     destroy(): void {

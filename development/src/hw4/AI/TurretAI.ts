@@ -1,6 +1,7 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
@@ -103,6 +104,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
                     //@ts-ignore
                     this.atk.attack(this, target, XENO_ACTOR_TYPE.FRIEND);
                     this.playAnimation('ATK');
+                   
                 } else {
                     this.playAnimation('IDLE');
                 }
@@ -167,15 +169,15 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             colorObj = Color.fromStringHex(color);
         switch (this.type) {
             case TURRET_TYPE.BEAM:
-                this.atk = new PointAttack(damage, cooldown, new BulletAnimation(colorObj), atkEffect, this.battleManager);
+                this.atk = new PointAttack(damage, cooldown, new BulletAnimation(colorObj), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.ROCKET:
                 const { explosionRange } = data;
                 this.explosionRange = explosionRange;
-                this.atk = new AOEAttack(damage, explosionRange, cooldown, new ExplosionAnimation(colorObj, this.owner.position, this.explosionRange), atkEffect, this.battleManager);
+                this.atk = new AOEAttack(damage, explosionRange, cooldown, new ExplosionAnimation(colorObj, this.owner.position, this.explosionRange), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.ELECTRIC:
-                this.atk = new AOEAttack(damage, range, cooldown, new SplitAnimation(colorObj), atkEffect, this.battleManager);
+                this.atk = new AOEAttack(damage, range, cooldown, new SplitAnimation(colorObj), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.BANK:
                 const { gold } = data;

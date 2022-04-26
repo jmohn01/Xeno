@@ -140,6 +140,17 @@ export default class xeno_level extends Scene {
         this.load.object("wallData", "xeno_assets/data/wall_data.json");
         this.load.object("enemyData", "xeno_assets/data/enemy_data.json");
         this.load.object("levelData", "xeno_assets/data/level_data.json");
+
+        this.load.audio("ACID", "xeno_assets/audio/acid.wav");
+        this.load.audio("FIRE", "xeno_assets/audio/fire.wav");
+        this.load.audio("FROST", "xeno_assets/audio/frost.wav");
+        this.load.audio("NET", "xeno_assets/audio/net.wav");
+
+        this.load.audio("BEAM", "xeno_assets/audio/beam.wav");
+        this.load.audio("ROCKET", "xeno_assets/audio/rocket.wav");
+        this.load.audio("ELECTRIC", "xeno_assets/audio/electric.wav");
+
+        this.load.audio("takedmg", "xeno_assets/audio/takedmg.wav");
     }
 
     unloadScene(): void {
@@ -219,6 +230,7 @@ export default class xeno_level extends Scene {
 
         this.selectionHighlight = this.add.animatedSprite("highlight", "UI");
         this.selectionHighlight.animation.playIfNotAlready("IDLE", true);
+        this.selectionHighlight.visible = false; 
         this.updateLevelUI();
         this.updateSelectedUI();
     }

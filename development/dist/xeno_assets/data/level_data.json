@@ -1,6 +1,6 @@
 {
     "1_1": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
@@ -22,7 +22,7 @@
         ]
     },
     "1_2": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
@@ -47,7 +47,7 @@
         ]
     },
     "2_1": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
@@ -77,7 +77,7 @@
         ]
     },
     "2_2": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
@@ -109,7 +109,7 @@
         ]
     },
     "3_1": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
@@ -140,7 +140,7 @@
         ]
     },
     "3_2": {
-        "gold": 2000,
+        "gold": 1000,
         "baseHP": 1000,
         "baseArmor": 0, 
         "friendAllowed": [
