@@ -103,7 +103,7 @@ export default class EnemyAI implements BattlerAI {
             this.owner.animation.play(`${ENEMY_NAME[this.type]}_DIED`);
             setTimeout(() => {
                 this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner, reward: this.reward })
-            }, 250); 
+            }, 400); 
         }
     }
 

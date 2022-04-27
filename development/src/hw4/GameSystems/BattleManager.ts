@@ -31,9 +31,7 @@ export default class BattleManager {
     }
 
     private static addEffects(data: EffectData, target: BattlerAI) {
-        console.log(data);
         if (data.fire) {
-            console.log(target.owner.id);
             target.addEffect(new FireEffect(data.fire.duration, data.fire.ticks, data.fire.damage, target));
         }
         if (data.slow) {

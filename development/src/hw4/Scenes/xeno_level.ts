@@ -459,7 +459,7 @@ export default class xeno_level extends Scene {
                 spawnedAI = this.placeWall(clickColRow);
                 break;
             case 'ENEMY':
-                this.placeEnemey(clickColRow, ENEMY_TYPE.BASIC);
+                this.placeEnemy(clickColRow, ENEMY_TYPE.BASIC);
                 break;
         }
         if (spawnedAI) {
@@ -567,7 +567,7 @@ export default class xeno_level extends Scene {
             console.log(`SPAWNED ${ENEMY_NAME[enemyType]}, currentWaveEnemy: ${this.state.currentWaveEnemy}`);
 
             const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
-            this.placeEnemey(this.floor.getColRowAt(spawnPos), enemyType);
+            this.placeEnemy(this.floor.getColRowAt(spawnPos), enemyType);
             this.state.currentWaveEnemy++; 
         }
         this.spawnTimer = new Timer(1000, spawnEnemy, true);
@@ -727,7 +727,7 @@ export default class xeno_level extends Scene {
         return (turret.ai as BattlerAI & Upgradeable);
     }
 
-    placeEnemey(tilePosition: Vec2, type: ENEMY_TYPE) {
+    placeEnemy(tilePosition: Vec2, type: ENEMY_TYPE) {
         console.log(`DEAD ENEMIES: ${this.deadEnemies.map((e) => e.id)}`);
         let enemy = this.deadEnemies.pop();
         console.log(ENEMY_NAME[type]);
@@ -814,7 +814,7 @@ export default class xeno_level extends Scene {
     }
 
     removeEnemy(id: number): void {
-        this.aliveEnemies.filter((e) => e.id !== id); 
+        this.aliveEnemies = this.aliveEnemies.filter((e) => e.id !== id); 
     }
 
     getWallData(type: WALL_TYPE) {
