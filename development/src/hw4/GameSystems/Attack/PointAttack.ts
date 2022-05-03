@@ -42,6 +42,18 @@ export default class PointAttack {
         this.soundKey = soundKey; 
     }
 
+    isPaused() {
+        return this.cooldownTimer.isPaused(); 
+    }
+
+    pauseCD() {
+        this.cooldownTimer.pause(); 
+    }
+
+    resumeCD() {
+        this.cooldownTimer.resume();
+    }
+
     attack(from: BattlerAI, to: BattlerAI): boolean {
         if (!this.cooldownTimer.isStopped()) {
             return false;

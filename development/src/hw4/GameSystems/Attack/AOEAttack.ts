@@ -43,6 +43,19 @@ export default class AOEAttack {
         this.soundKey = soundKey; 
     }
 
+    isPaused() {
+        return this.cooldownTimer.isPaused(); 
+    }
+
+    pauseCD() {
+        this.cooldownTimer.pause(); 
+    }
+
+    resumeCD() {
+        this.cooldownTimer.resume();
+    }
+
+
     attack(from: Vec2, targets: BattlerAI[], scene: Scene): boolean {
         if (!this.cooldownTimer.isStopped()) {
             return false;

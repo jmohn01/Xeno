@@ -32,10 +32,16 @@ export default class MainMenu extends Scene {
         this.load.image("ESC", "xeno_assets/images/light/esc_key_light.png")
         this.load.image("semicolon", "xeno_assets/images/light/semicolon_key_light.png")
         this.load.image("quote", "xeno_assets/images/light/quote_key_light.png")
+        this.load.image("rightclick", "xeno_assets/images/light/mouse_right_key_light.png")
     }
 
     unloadScene() {
-        this.resourceManager.unloadAllResources();
+        this.resourceManager.keepImage("background");
+        this.resourceManager.keepImage("leftclick");
+        this.resourceManager.keepImage("rightclick");
+        this.resourceManager.keepImage("ESC");
+        this.resourceManager.keepImage("semicolon");
+        this.resourceManager.keepImage("quote");
     }
 
     startScene() {
@@ -151,9 +157,18 @@ export default class MainMenu extends Scene {
         leftclickLine2.fontSize = 40;
         leftclickLine2.textColor = Color.BLACK;
 
+        const rightclick = this.add.sprite("rightclick", "control");
+        rightclick.position = new Vec2(titlePosition.x, 5.5 * PADDING);
+
+        const rightclickLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 5.5 * PADDING), text: 'Rightclick to clear out select & placing' })
+        rightclickLine1.backgroundColor = rightclickLine1.borderColor = Color.TRANSPARENT;
+        rightclickLine1.fontSize = 40;
+        rightclickLine1.textColor = Color.BLACK;
+
+
         const ESC = this.add.sprite("ESC", "control");
-        ESC.position = new Vec2(titlePosition.x, 6 * PADDING);
-        const ESCLine = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 6 * PADDING), text: 'Pause the game while in game and acess the pause menu' });
+        ESC.position = new Vec2(titlePosition.x, 7 * PADDING);
+        const ESCLine = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 7 * PADDING), text: 'Pause the game while in game and acess the pause menu' });
         ESCLine.backgroundColor = ESCLine.borderColor = Color.TRANSPARENT;
         ESCLine.fontSize = 40;
         ESCLine.textColor = Color.BLACK;
@@ -171,7 +186,7 @@ export default class MainMenu extends Scene {
 
         const helpDeveLine = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 3 * PADDING), text: "Xeno is developed by Chencheng Yang, Hongcheng Li, and XXX" })
 
-        const helpStoryLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4 * PADDING), text: "Your are part of the intergalactic explorers, \"Xeno\"" });
+        const helpStoryLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4 * PADDING), text: "You are part of the intergalactic explorers, \"Xeno\"" });
         const helpStoryLine2 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4.5 * PADDING), text: "Utilize your resource to build up a fortress and defend against the vicious UMAs" });
         const helpStoryLine3 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 5 * PADDING), text: "Don't let your guard down or you will be eaten alive " });
 

@@ -80,6 +80,10 @@ export default class Timer implements Updateable {
         }
     }
 
+    resume() {
+        this.state = TimerState.ACTIVE; 
+    }
+
     protected end(){
         // Update the state
         this.state = TimerState.STOPPED;

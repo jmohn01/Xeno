@@ -55,6 +55,13 @@ export default class TrapAI implements AI, Upgradeable {
     }
 
     update(deltaT: number): void {
+        if (this.level.isPaused()) {
+            this.atk.pauseCD();
+        } else {
+            if (this.atk.isPaused()) {
+                this.atk.resumeCD(); 
+            }
+        }
     }
 
     upgrade(): void {

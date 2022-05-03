@@ -5,6 +5,7 @@ import { Effect } from "./Effect";
 
 
 export class SlowEffect extends Effect<SlowEffect> {
+    
 
     duration: number;
 
@@ -50,5 +51,13 @@ export class SlowEffect extends Effect<SlowEffect> {
         if (e.type === this.type) {
             return this.duration === e.duration && this.percent === e.percent;
         }
+    }
+
+    pause(): void {
+        this.durationTimer.pause();
+    }
+
+    resume(): void {
+        this.durationTimer.resume(); 
     }
 }
