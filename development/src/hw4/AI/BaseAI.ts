@@ -56,7 +56,6 @@ export default class BaseAI implements BattlerAI {
     }
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
 
     activate(options: Record<string, any>): void {

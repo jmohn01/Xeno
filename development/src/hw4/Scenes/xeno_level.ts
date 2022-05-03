@@ -19,7 +19,7 @@ import EnemyAI from "../AI/EnemyAI";
 import TrapAI from "../AI/TrapAI";
 import TurretAI from "../AI/TurretAI";
 import WallAI, { NEIGHBOR } from "../AI/WallAI";
-import { CANVAS_SIZE, ENEMY_NAME, ENEMY_TYPE, GRADE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS } from "../constants";
+import { CANVAS_SIZE, ENEMY_NAME, ENEMY_TYPE, GRADE, TRAP_TYPE, TURRET_TYPE, UI_POSITIONS, WALL_TYPE, XENO_ACTOR_TYPE, XENO_COLOR, XENO_EVENTS, XENO_LEVEL_PHYSICS_OPTIONS } from "../constants";
 import { EffectData } from "../GameSystems/Attack/internal";
 import BattleManager from "../GameSystems/BattleManager";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
@@ -28,6 +28,9 @@ import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import Upgradeable from "../AI/Upgradable";
 import Timer from "../../Wolfie2D/Timing/Timer";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import MainMenu from "./MainMenu";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+
 
 export type LevelState = {
     placing: TRAP_TYPE | TURRET_TYPE | 'WALL' | 'ENEMY',
@@ -54,7 +57,9 @@ export default class xeno_level extends Scene {
         isPaused: false
     }
 
-    protected level: String;
+    protected level: string;
+
+    protected nextLevel: string;
 
     private floor: OrthogonalTilemap;
 
@@ -101,6 +106,7 @@ export default class xeno_level extends Scene {
     private control: Layer;
     private help: Layer;
     private menu: Layer;
+    private gameover: Layer;
 
     private errorLabel: Label;
 
@@ -128,9 +134,12 @@ export default class xeno_level extends Scene {
 
     private waveLabel: Label;
 
-    private selectingLable: Label;
+    private selectingLabel: Label;
 
-    private placingLable: Label;
+    private placingLabel: Label;
+
+    private gameoverLabel: Label;
+    private gameoverBtn: Button;
 
 
     loadScene(): void {
@@ -176,11 +185,22 @@ export default class xeno_level extends Scene {
         this.resourceManager.keepSpritesheet("slice");
         this.resourceManager.keepSpritesheet("highlight");
 
+        this.resourceManager.keepImage("background");
+        this.resourceManager.keepImage("leftclick");
+        this.resourceManager.keepImage("rightclick");
+        this.resourceManager.keepImage("ESC");
+        this.resourceManager.keepImage("semicolon");
+        this.resourceManager.keepImage("quote");
+        this.resourceManager.keepImage("cave");
+        this.resourceManager.keepImage("ingame_ui");
+
         this.resourceManager.keepObject('trapData');
         this.resourceManager.keepObject('enemyData');
         this.resourceManager.keepObject('levelData');
         this.resourceManager.keepObject('turretData');
         this.resourceManager.keepObject('wallData');
+
+        this.resourceManager.unloadAllResources();
     }
 
     startScene(): void {
@@ -188,6 +208,7 @@ export default class xeno_level extends Scene {
         this.initUI();
         this.initData();
         this.initPauseMenuUI();
+        this.initGameoverUI();
 
         let tilemapLayers = this.add.tilemap("level", new Vec2(1, 1));
         this.floor = (tilemapLayers[1].getItems()[0] as OrthogonalTilemap);
@@ -210,9 +231,12 @@ export default class xeno_level extends Scene {
             XENO_EVENTS.SPAWN_NEXT_WAVE,
             XENO_EVENTS.RESUME,
             XENO_EVENTS.GAME_OVER,
+            XENO_EVENTS.NEXT_LEVEL,
+            XENO_EVENTS.RETRY,
             'menu',
             'control',
-            'help'
+            'help',
+            'quit'
         ])
     }
 
@@ -224,13 +248,14 @@ export default class xeno_level extends Scene {
         return lb;
     }
 
-    addBtnAt(position: Vec2, text: string, layer: string, eventId?: string) {
+    addBtnAt(position: Vec2, text: string, layer: string, eventId?: string): Button {
         const btn = <Button>this.add.uiElement(UIElementType.BUTTON, layer, { position: position, text: text });
         btn.borderColor = btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
         btn.size.set(200, 50);
         if (eventId) {
             btn.onClickEventId = eventId;
         }
+        return btn;
     }
 
     initUI() {
@@ -241,8 +266,8 @@ export default class xeno_level extends Scene {
 
         this.goldLabel = this.addLabelAt(UI_POSITIONS.SLOT_MONEY, '0', Color.BLACK, 32);
         this.waveLabel = this.addLabelAt(UI_POSITIONS.SLOT_STATUS, '0 / 4', Color.BLACK, 32);
-        this.placingLable = this.addLabelAt(UI_POSITIONS.PLACING_LABEL, 'Placing:', Color.BLACK, 32, 'Roboto');
-        this.selectingLable = this.addLabelAt(UI_POSITIONS.SELECTING_LABEL, 'Selecting:', Color.BLACK, 32, 'Roboto');
+        this.placingLabel = this.addLabelAt(UI_POSITIONS.PLACING_LABEL, 'Placing:', Color.BLACK, 32, 'Roboto');
+        this.selectingLabel = this.addLabelAt(UI_POSITIONS.SELECTING_LABEL, 'Selecting:', Color.BLACK, 32, 'Roboto');
 
         this.errorLabel = this.addLabelAt(UI_POSITIONS.ERROR_LABEL, '', Color.RED, 32, 'Roboto');
 
@@ -400,6 +425,17 @@ export default class xeno_level extends Scene {
         )
     }
 
+    initGameoverUI() {
+        const center = this.viewport.getCenter();
+        const PADDING = 100;
+        this.gameover = this.addUILayer('gameover');
+        this.add.sprite('background', 'gameover').position = center.clone();
+        this.gameoverLabel = this.addLabelAt(new Vec2(center.x, 4 * PADDING), 'Congrats! You won!', Color.BLACK, 48, 'Roboto', 'gameover');
+        this.gameoverBtn = this.addBtnAt(new Vec2(center.x, 5 * PADDING), 'NEXT LEVEL', 'gameover', XENO_EVENTS.NEXT_LEVEL);
+        this.addBtnAt(new Vec2(center.x, 6 * PADDING), 'QUIT', 'gameover', 'quit');
+        this.gameover.setHidden(true);
+    }
+
     initData() {
         this.trapData = this.load.getObject('trapData');
         this.turretData = this.load.getObject('turretData');
@@ -457,7 +493,28 @@ export default class xeno_level extends Scene {
                 this.updateLevelUI();
                 break;
             case XENO_EVENTS.GAME_OVER:
-                console.log(event.data.get('won'));
+                const won = event.data.get('won');
+                if (won) {
+                    if (this.level === '3_2') {
+                        this.gameoverLabel.text = 'Finally, we get to return home...'
+                        this.gameoverBtn.visible = false;
+                    }
+                    if (this.nextLevel) {
+                        const unlockedLevels: any = JSON.parse(window.localStorage.getItem('unlockedLevels')); 
+                        unlockedLevels[this.nextLevel] = true; 
+                        window.localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels)); 
+                    }
+                    this.UI.setHidden(true);
+                    this.primary.setHidden(true);
+                    this.gameover.setHidden(false);
+                } else {
+                    this.gameoverBtn.text = 'RETRY';
+                    this.gameoverBtn.onClickEventId = XENO_EVENTS.RETRY;
+                    this.gameoverLabel.text = 'UMAs won... Your journey has ended'
+                    this.UI.setHidden(true);
+                    this.primary.setHidden(true);
+                    this.gameover.setHidden(false);
+                }
                 break;
             case XENO_EVENTS.TRIGGER_TRAP:
                 const node = this.sceneGraph.getNode(event.data.get("node"));
@@ -493,6 +550,10 @@ export default class xeno_level extends Scene {
                 this.menu.setHidden(true);
                 this.control.setHidden(true);
                 this.help.setHidden(false);
+                break;
+            case 'quit':
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: 'music' });
+                this.sceneManager.changeToScene(MainMenu, {});
                 break;
         }
     }
@@ -531,7 +592,7 @@ export default class xeno_level extends Scene {
                 this.state.placing = null;
                 this.state.selected = null;
                 this.updateSelectedUI();
-                this.placingLable.text = 'Placing: ';
+                this.placingLabel.text = 'Placing: ';
             }
 
             if (Input.isKeyJustPressed('\'')) {
@@ -548,6 +609,14 @@ export default class xeno_level extends Scene {
             if (Input.isKeyJustPressed('escape')) {
                 this.pauseLevel();
             }
+
+            if (Input.isKeyJustPressed('`')) {
+                this.emitter.fireEvent(XENO_EVENTS.GAME_OVER, { won: true });
+            }
+
+            if (Input.isKeyJustPressed('2')) {
+                this.emitter.fireEvent(XENO_EVENTS.GAME_OVER, { won: false });
+            }
         } else {
 
         }
@@ -559,7 +628,7 @@ export default class xeno_level extends Scene {
             this.atkLabel.visible = false;
             this.hpLabel.visible = false;
             this.selectionHighlight.visible = false;
-            this.selectingLable.text = 'Selecting: ';
+            this.selectingLabel.text = 'Selecting: ';
             return;
         }
         const friendAI = this.state.selected;
@@ -580,7 +649,7 @@ export default class xeno_level extends Scene {
         console.log(friendAI);
 
         //@ts-ignore
-        this.selectingLable.text = `Selecting: ${this.getTooltip(friendAI.type)}`
+        this.selectingLabel.text = `Selecting: ${this.getTooltip(friendAI.type)}`
 
         //@ts-ignore
         const upgradeCost = friendAI.upgradeCost;
@@ -594,10 +663,10 @@ export default class xeno_level extends Scene {
     updatePlacingUI() {
         if (!this.state.placing) {
             this.placingCostLabel.visible = false;
-            this.placingLable.text = 'Placing: ';
+            this.placingLabel.text = 'Placing: ';
             return;
         }
-        this.placingLable.text = `Placing: ${this.getTooltip(this.state.placing)}`;
+        this.placingLabel.text = `Placing: ${this.getTooltip(this.state.placing)}`;
         if (this.state.placing === 'WALL') {
             this.placingCostLabel.text = this.wallData.placingCost.toString();
         } else if ((<any>Object).values(TURRET_TYPE).includes(this.state.placing)) {

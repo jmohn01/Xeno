@@ -129,7 +129,6 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
 
     activate(options: Record<string, any>): void {

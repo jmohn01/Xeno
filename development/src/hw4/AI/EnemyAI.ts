@@ -226,7 +226,6 @@ export default class EnemyAI implements BattlerAI {
     }
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
     
     handleEvent(event: GameEvent): void {
