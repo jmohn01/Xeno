@@ -60,7 +60,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
         if (this.health <= 0) {
             return;
         }
-        this.health -= damage;
+        this.health -= ((100 - this.armor) / 100) * damage; 
         if (this.health <= 0) {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;

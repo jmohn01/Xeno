@@ -50,7 +50,7 @@ export default class xeno_level extends Scene {
         placing: null,
         selected: null,
         gold: 0,
-        currentWave: 0,
+        currentWave: 1,
         maxWave: 0,
         currentWaveEnemy: 0,
         aliveEnemies: 0,
@@ -454,8 +454,6 @@ export default class xeno_level extends Scene {
         })
         this.state.aliveEnemies = this.levelData.waves.reduce(((acc: number, element: number[]) => acc + element.length), 0)
         this.state.maxWave = this.levelData.waves.length;
-        console.log(this.levelData);
-        console.log("NUM ENEMIES: %d", this.state.aliveEnemies);
     }
 
 
@@ -529,6 +527,7 @@ export default class xeno_level extends Scene {
                     return;
                 }
                 this.spawnWave();
+                this.updateLevelUI();
                 break;
             case XENO_EVENTS.RESUME:
                 this.menu.setHidden(true);
@@ -600,7 +599,7 @@ export default class xeno_level extends Scene {
                 (this.base.ai as BattlerAI).health = 1 << 30;
             }
 
-            if (Input.isKeyJustPressed(':')) {
+            if (Input.isKeyJustPressed(';')) {
                 console.log("INFINITE MONEY");
                 this.state.gold = 1 << 30;
                 this.updateLevelUI();
@@ -864,10 +863,9 @@ export default class xeno_level extends Scene {
                 this.emitter.fireEvent(XENO_EVENTS.SPAWN_NEXT_WAVE);
             }, 5000)
         }
-        this.waveTimer = new Timer(1000 * this.levelData.waves[this.state.currentWave].length, stopTimer);
+        this.waveTimer = new Timer(1000 * this.levelData.waves[this.state.currentWave].length + 100, stopTimer);
         this.spawnTimer.start();
         this.waveTimer.start();
-        console.log("RUNNED");
     }
 
 

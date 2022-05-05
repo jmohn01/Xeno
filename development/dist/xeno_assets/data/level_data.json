@@ -1,7 +1,7 @@
 {
     "1_1": {
         "gold": 1000,
-        "baseHP": 1000,
+        "baseHP": 10,
         "baseArmor": 0, 
         "friendAllowed": [
             "WALL",
@@ -10,7 +10,9 @@
             "ENEMY"
         ],
         "waves": [
-            [0]
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
             
         ],
         "spawns": [
