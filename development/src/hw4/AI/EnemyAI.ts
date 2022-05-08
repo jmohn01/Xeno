@@ -100,8 +100,8 @@ export default class EnemyAI implements BattlerAI {
         if (this.health <= 0) {
             return;
         }
-        console.log(damage);
-        this.health -= damage;
+
+        this.health -= ((100 - this.armor) / 100) * damage; 
         
         if (this.health <= 0) {
             this.effects.forEach((e) => {
@@ -113,7 +113,7 @@ export default class EnemyAI implements BattlerAI {
             this.owner.animation.play(`${ENEMY_NAME[this.type]}_DIED`);
             setTimeout(() => {
                 this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner, reward: this.reward })
-            }, 250); 
+            }, 400); 
         }
     }
 
@@ -313,9 +313,7 @@ export default class EnemyAI implements BattlerAI {
     }
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
-
 }
 
 export enum EnemyStates {

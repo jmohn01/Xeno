@@ -1,6 +1,7 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
@@ -59,7 +60,7 @@ export default class TurretAI implements BattlerAI, Upgradeable {
         if (this.health <= 0) {
             return;
         }
-        this.health -= damage;
+        this.health -= ((100 - this.armor) / 100) * damage; 
         if (this.health <= 0) {
             this.owner.setAIActive(false, {});
             this.owner.isCollidable = false;
@@ -84,7 +85,6 @@ export default class TurretAI implements BattlerAI, Upgradeable {
 
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
 
     activate(options: Record<string, any>): void {
@@ -96,19 +96,36 @@ export default class TurretAI implements BattlerAI, Upgradeable {
     }
 
     update(deltaT: number): void {
+        if (this.level.isPaused()) {
+            if (this.type === TURRET_TYPE.BANK) {
+                this.bankTimer.pause(); 
+            } else {
+                this.atk.pauseCD(); 
+            }
+            this.effects.forEach((e) => e.pause()); 
+            return; 
+        } else {
+            this.effects.forEach((e) => e.resume());
+        }
+
         switch (this.type) {
             case TURRET_TYPE.BEAM: {
+                if (this.atk.isPaused()) 
+                    this.atk.resumeCD()
                 const target = this.level.findEnemyInRange(this.owner.position, this.range);
                 if (target) {
                     //@ts-ignore
                     this.atk.attack(this, target, XENO_ACTOR_TYPE.FRIEND);
                     this.playAnimation('ATK');
+                   
                 } else {
                     this.playAnimation('IDLE');
                 }
             } break;
 
             case TURRET_TYPE.ROCKET: {
+                if (this.atk.isPaused()) 
+                    this.atk.resumeCD()
                 const target = this.level.findEnemyInRange(this.owner.position, this.range);
                 if (target) {
                     //@ts-ignore
@@ -119,6 +136,8 @@ export default class TurretAI implements BattlerAI, Upgradeable {
                 }
             } break;
             case TURRET_TYPE.ELECTRIC: {
+                if (this.atk.isPaused()) 
+                    this.atk.resumeCD()
                 const pos = this.owner.position;
                 const targets = this.level.findEnemiesInRange(pos, this.range);
                 if (targets.length !== 0) {
@@ -130,6 +149,8 @@ export default class TurretAI implements BattlerAI, Upgradeable {
                 }
             } break;
             case TURRET_TYPE.BANK:
+                if (this.bankTimer.isPaused())
+                    this.bankTimer.resume();
                 this.playAnimation('ATK');
         }
     }
@@ -167,15 +188,15 @@ export default class TurretAI implements BattlerAI, Upgradeable {
             colorObj = Color.fromStringHex(color);
         switch (this.type) {
             case TURRET_TYPE.BEAM:
-                this.atk = new PointAttack(damage, cooldown, new BulletAnimation(colorObj), atkEffect, this.battleManager);
+                this.atk = new PointAttack(damage, cooldown, new BulletAnimation(colorObj), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.ROCKET:
                 const { explosionRange } = data;
                 this.explosionRange = explosionRange;
-                this.atk = new AOEAttack(damage, explosionRange, cooldown, new ExplosionAnimation(colorObj, this.owner.position, this.explosionRange), atkEffect, this.battleManager);
+                this.atk = new AOEAttack(damage, explosionRange, cooldown, new ExplosionAnimation(colorObj, this.owner.position, this.explosionRange), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.ELECTRIC:
-                this.atk = new AOEAttack(damage, range, cooldown, new SplitAnimation(colorObj), atkEffect, this.battleManager);
+                this.atk = new AOEAttack(damage, range, cooldown, new SplitAnimation(colorObj), atkEffect, this.battleManager, this.type);
                 break;
             case TURRET_TYPE.BANK:
                 const { gold } = data;

@@ -43,6 +43,14 @@ export class AcidEffect extends Effect<AcidEffect> {
     equal(e: AcidEffect): boolean {
         return this.duration === e.duration && this.reduction === e.reduction; 
     }
+
+    pause(): void {
+        this.durationTimer.pause();
+    }
+
+    resume(): void {
+        this.durationTimer.resume(); 
+    }
     
     
 }

@@ -23,6 +23,10 @@ export abstract class Effect<T> {
     abstract isActive(): boolean; 
 
     abstract equal(e: T): boolean;
+
+    abstract pause(): void;
+
+    abstract resume(): void;
 }
 
 

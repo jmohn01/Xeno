@@ -48,7 +48,7 @@ export default class WallAI implements BattlerAI, Upgradeable {
             return;
         }
 
-        this.health -= damage;
+        this.health -= ((100 - this.armor) / 100) * damage; 
 
         if (this.health <= 0) {
             this.owner.setAIActive(false, {});
@@ -129,7 +129,6 @@ export default class WallAI implements BattlerAI, Upgradeable {
 
 
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
 
     activate(options: Record<string, any>): void {

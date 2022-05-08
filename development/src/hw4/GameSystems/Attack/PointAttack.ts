@@ -1,5 +1,6 @@
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../../Wolfie2D/Events/Emitter";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import BattlerAI from "../../AI/BattlerAI";
 import { XENO_EFFECT_TYPE } from "../../constants";
@@ -28,12 +29,29 @@ export default class PointAttack {
 
     atkAnimation: AtkAnimation;
 
-    constructor(damage: number, cooldown: number, atkAnimation: AtkAnimation, effects: EffectData, battleManager: BattleManager) {
+    soundKey: string;
+
+    emitter: Emitter = new Emitter();
+
+    constructor(damage: number, cooldown: number, atkAnimation: AtkAnimation, effects: EffectData, battleManager: BattleManager, soundKey?: string) {
         this.effects = effects;
         this.damage = damage;
         this.cooldownTimer = new Timer(cooldown);
         this.atkAnimation = atkAnimation;
         this.battleManager = battleManager;
+        this.soundKey = soundKey; 
+    }
+
+    isPaused() {
+        return this.cooldownTimer.isPaused(); 
+    }
+
+    pauseCD() {
+        this.cooldownTimer.pause(); 
+    }
+
+    resumeCD() {
+        this.cooldownTimer.resume();
     }
 
     attack(from: BattlerAI, to: BattlerAI): boolean {
@@ -49,6 +67,10 @@ export default class PointAttack {
         }
 
         this.battleManager.handlePointAtk(to, this.damage, this.effects); 
+
+        if (this.soundKey) {
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.soundKey, loop: false, holdReference: false });
+        }
 
         this.cooldownTimer.start(); 
     }

@@ -49,6 +49,16 @@ export class FireEffect extends Effect<FireEffect> {
         return !this.durationTimer.isStopped();
     }
 
+    pause(): void {
+        this.durationTimer.pause();
+        this.dotTimer.pause();
+    }
+
+    resume(): void {
+        this.durationTimer.resume();
+        this.dotTimer.resume();
+    }
+
     equal(e: FireEffect): boolean {
         return e.duration === this.duration && e.damage === this.damage && e.ticks === this.ticks;
     }

@@ -14,6 +14,7 @@ import level_2_1 from "./levels/level_2_1";
 import level_2_2 from "./levels/level_2_2";
 import level_3_1 from "./levels/level_3_1";
 import level_3_2 from "./levels/level_3_2";
+import Input from "../../Wolfie2D/Input/Input";
 
 const PADDING = 100;
 
@@ -25,6 +26,8 @@ export default class MainMenu extends Scene {
     private control: Layer;
     private help: Layer;
 
+    private unlockedLevels: any;
+
     loadScene() {
         this.load.audio("music", "xeno_assets/audio/menu.mp3")
         this.load.image("background", "xeno_assets/images/background.png")
@@ -32,14 +35,40 @@ export default class MainMenu extends Scene {
         this.load.image("ESC", "xeno_assets/images/light/esc_key_light.png")
         this.load.image("semicolon", "xeno_assets/images/light/semicolon_key_light.png")
         this.load.image("quote", "xeno_assets/images/light/quote_key_light.png")
+        this.load.image("rightclick", "xeno_assets/images/light/mouse_right_key_light.png")
+        this.load.image("tilda", "xeno_assets/images/light/tilda_key_light.png")
     }
 
     unloadScene() {
-        this.resourceManager.unloadAllResources();
+        this.resourceManager.keepImage("background");
+        this.resourceManager.keepImage("leftclick");
+        this.resourceManager.keepImage("rightclick");
+        this.resourceManager.keepImage("ESC");
+        this.resourceManager.keepImage("semicolon");
+        this.resourceManager.keepImage("quote");
+        this.resourceManager.keepImage("tilda");
     }
 
     startScene() {
         const center = this.viewport.getCenter();
+        this.unlockedLevels = window.localStorage.getItem('unlockedLevels');
+        if (!this.unlockedLevels) {
+            this.unlockedLevels = {
+                '1_1': true,
+                '1_2': false,
+                '2_1': false,
+                '2_2': false,
+                '3_1': false,
+                '3_2': false
+            }
+            window.localStorage.setItem(
+                'unlockedLevels',
+                JSON.stringify(
+                    this.unlockedLevels
+                ));
+        } else {
+            this.unlockedLevels = JSON.parse(this.unlockedLevels);
+        }
 
         // The main menu
         this.main = this.addUILayer("main");
@@ -101,29 +130,35 @@ export default class MainMenu extends Scene {
         chapterTitleLine.fontSize = 78;
 
         const chapter1_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.25, 4 * PADDING), text: '1-1' })
-        chapter1_1Btn.borderColor = chapter1_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is1_1Unlocked = this.unlockedLevels['1_1'];
+        chapter1_1Btn.borderColor = chapter1_1Btn.backgroundColor = this.getBtnColor(is1_1Unlocked);
         chapter1_1Btn.size.set(100, 100);
-        chapter1_1Btn.onClickEventId = "chapter1_1";
+        chapter1_1Btn.onClickEventId = is1_1Unlocked ? "chapter1_1": '';
         const chapter1_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.25, 6 * PADDING), text: '1-2' })
-        chapter1_2Btn.borderColor = chapter1_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is1_2Unlocked = this.unlockedLevels['1_2'];
+        chapter1_2Btn.borderColor = chapter1_2Btn.backgroundColor = this.getBtnColor(is1_2Unlocked);
         chapter1_2Btn.size.set(100, 100);
-        chapter1_2Btn.onClickEventId = "chapter1_2";
+        chapter1_2Btn.onClickEventId = is1_2Unlocked ? "chapter1_2": '';
         const chapter2_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.5, 4 * PADDING), text: '2-1' })
-        chapter2_1Btn.borderColor = chapter2_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is2_1Unlocked = this.unlockedLevels['2_1'];
+        chapter2_1Btn.borderColor = chapter2_1Btn.backgroundColor = this.getBtnColor(is2_1Unlocked);
         chapter2_1Btn.size.set(100, 100);
-        chapter2_1Btn.onClickEventId = "chapter2_1";
+        chapter2_1Btn.onClickEventId = is2_1Unlocked ? "chapter2_1": '';
         const chapter2_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.5, 6 * PADDING), text: '2-2' })
-        chapter2_2Btn.borderColor = chapter2_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is2_2Unlocked = this.unlockedLevels['2_2'];
+        chapter2_2Btn.borderColor = chapter2_2Btn.backgroundColor = this.getBtnColor(is2_2Unlocked);
         chapter2_2Btn.size.set(100, 100);
-        chapter2_2Btn.onClickEventId = "chapter2_2";
+        chapter2_2Btn.onClickEventId = is2_2Unlocked ? "chapter2_2": '';
         const chapter3_1Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.75, 4 * PADDING), text: '3-1' })
-        chapter3_1Btn.borderColor = chapter3_1Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is3_1Unlocked = this.unlockedLevels['3_1'];
+        chapter3_1Btn.borderColor = chapter3_1Btn.backgroundColor = this.getBtnColor(is3_1Unlocked);
         chapter3_1Btn.size.set(100, 100);
-        chapter3_1Btn.onClickEventId = "chapter3_1";
+        chapter3_1Btn.onClickEventId = is3_1Unlocked ? "chapter3_1": '';
         const chapter3_2Btn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.75, 6 * PADDING), text: '3-2' })
-        chapter3_2Btn.borderColor = chapter3_2Btn.backgroundColor = XENO_COLOR.PASSIVE_GREY;
+        const is3_2Unlocked = this.unlockedLevels['3_2'];
+        chapter3_2Btn.borderColor = chapter3_2Btn.backgroundColor = this.getBtnColor(is3_2Unlocked);
         chapter3_2Btn.size.set(100, 100);
-        chapter3_2Btn.onClickEventId = "chapter3_2";
+        chapter3_2Btn.onClickEventId = is3_2Unlocked ? "chapter3_2": '';
 
 
         const chapterBackBtn = this.add.uiElement(UIElementType.BUTTON, "chapter", { position: new Vec2(CANVAS_SIZE.x * 0.9, 8 * PADDING), text: 'BACK' });
@@ -151,9 +186,18 @@ export default class MainMenu extends Scene {
         leftclickLine2.fontSize = 40;
         leftclickLine2.textColor = Color.BLACK;
 
+        const rightclick = this.add.sprite("rightclick", "control");
+        rightclick.position = new Vec2(titlePosition.x, 5.5 * PADDING);
+
+        const rightclickLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 5.5 * PADDING), text: 'Rightclick to clear out select & placing' })
+        rightclickLine1.backgroundColor = rightclickLine1.borderColor = Color.TRANSPARENT;
+        rightclickLine1.fontSize = 40;
+        rightclickLine1.textColor = Color.BLACK;
+
+
         const ESC = this.add.sprite("ESC", "control");
-        ESC.position = new Vec2(titlePosition.x, 6 * PADDING);
-        const ESCLine = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 6 * PADDING), text: 'Pause the game while in game and acess the pause menu' });
+        ESC.position = new Vec2(titlePosition.x, 7 * PADDING);
+        const ESCLine = <Label>this.add.uiElement(UIElementType.LABEL, "control", { position: new Vec2(CANVAS_SIZE.x * 0.6, 7 * PADDING), text: 'Pause the game while in game and acess the pause menu' });
         ESCLine.backgroundColor = ESCLine.borderColor = Color.TRANSPARENT;
         ESCLine.fontSize = 40;
         ESCLine.textColor = Color.BLACK;
@@ -171,7 +215,7 @@ export default class MainMenu extends Scene {
 
         const helpDeveLine = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 3 * PADDING), text: "Xeno is developed by Chencheng Yang, Hongcheng Li, and XXX" })
 
-        const helpStoryLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4 * PADDING), text: "Your are part of the intergalactic explorers, \"Xeno\"" });
+        const helpStoryLine1 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4 * PADDING), text: "You are part of the intergalactic explorers, \"Xeno\"" });
         const helpStoryLine2 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 4.5 * PADDING), text: "Utilize your resource to build up a fortress and defend against the vicious UMAs" });
         const helpStoryLine3 = <Label>this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(center.x, 5 * PADDING), text: "Don't let your guard down or you will be eaten alive " });
 
@@ -187,6 +231,11 @@ export default class MainMenu extends Scene {
         quoteLine.backgroundColor = quoteLine.borderColor = Color.TRANSPARENT;
         quoteLine.fontSize = 40;
         quoteLine.textColor = Color.BLACK;
+
+        this.add.sprite("tilda", "help").position = new Vec2(titlePosition.x, 8 * PADDING);
+        const tildaLine = <Label> this.add.uiElement(UIElementType.LABEL, "help", { position: new Vec2(CANVAS_SIZE.x * 0.6, 8 * PADDING), text: "Beat the current level"});
+        tildaLine.fontSize = 40;
+        tildaLine.textColor = Color.BLACK;
 
 
         const helpBackBtn = this.add.uiElement(UIElementType.BUTTON, "help", { position: new Vec2(CANVAS_SIZE.x * 0.9, 8 * PADDING), text: 'BACK' });
@@ -256,6 +305,10 @@ export default class MainMenu extends Scene {
                 this.getLayer(e).setHidden(true);
             }
         })
+    }
+
+    getBtnColor(isUnlocked: boolean) {
+        return isUnlocked ? XENO_COLOR.PASSIVE_GREY : XENO_COLOR.ACTIVE_GREY;
     }
 
 
