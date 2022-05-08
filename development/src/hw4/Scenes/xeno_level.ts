@@ -1,4 +1,5 @@
 import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
+import Circle from "../../Wolfie2D/DataTypes/Shapes/Circle"
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Input from "../../Wolfie2D/Input/Input";
@@ -27,6 +28,7 @@ import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import Upgradeable from "../AI/Upgradable";
 import Timer from "../../Wolfie2D/Timing/Timer";
+import Shape from "../../Wolfie2D/DataTypes/Shapes/Shape";
 
 export type LevelState = {
     placing: TRAP_TYPE | TURRET_TYPE | 'WALL' | 'ENEMY',
@@ -604,6 +606,7 @@ export default class xeno_level extends Scene {
 
     placeTrap(tilePosition: Vec2, type: TRAP_TYPE): BattlerAI & Upgradeable {
         const trap = this.add.animatedSprite('traps', 'primary');
+        this.emitter.fireEvent(XENO_EVENTS.PLACED);
         //@ts-ignore
         trap.addAI(TrapAI, {
             // @ts-ignore
@@ -625,7 +628,7 @@ export default class xeno_level extends Scene {
 
     placeWall(tilePosition: Vec2): BattlerAI & Upgradeable {
         let wall: AnimatedSprite = this.deadWalls.pop();
-
+        this.emitter.fireEvent(XENO_EVENTS.PLACED);
 
         if (!wall) {
             wall = this.add.animatedSprite('walls', 'primary');
@@ -682,6 +685,7 @@ export default class xeno_level extends Scene {
 
     placeTurret(tilePosition: Vec2, type: TURRET_TYPE): BattlerAI & Upgradeable {
         let turret = this.deadTurrets.pop();
+        this.emitter.fireEvent(XENO_EVENTS.PLACED);
         // Have to initialize the turret's position before intializing AI for explosion animation.
         if (!turret) {
             turret = this.add.animatedSprite("turret", "primary");
@@ -736,7 +740,8 @@ export default class xeno_level extends Scene {
         enemy.animation.playIfNotAlready(`${ENEMY_NAME[type]}_MOVE`, true);
         enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
-        enemy.addPhysics();
+        let collisioncircle : Circle = new Circle(enemy.position,8);
+        enemy.addPhysics(collisioncircle);
         enemy.setGroup(XENO_ACTOR_TYPE.ENEMY);
         enemy.setAIActive(true, {});
         this.aliveEnemies.push(enemy);

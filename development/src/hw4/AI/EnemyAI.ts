@@ -15,12 +15,14 @@ import BattleManager from "../GameSystems/BattleManager";
 import { Effect } from "../GameSystems/Effect/Effect";
 import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
+import Receiver from "../../Wolfie2D/Events/Receiver";
 
 type Nodee = {
     tileposition: Vec2;
-    f: Number;
-    g: Number;
-    h: Number;
+    f: number;
+    g: number;
+    h: number;
+    prev: Nodee | null;
   };
 
 export default class EnemyAI implements BattlerAI {
@@ -70,6 +72,7 @@ export default class EnemyAI implements BattlerAI {
     currentPath: NavigationPath;
 
     battleManager: BattleManager; 
+    receiver: Receiver;
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
@@ -80,8 +83,15 @@ export default class EnemyAI implements BattlerAI {
         this.basePos = basePos;
         this.spawnPos = spawnPos;
         this.battleManager = battleManager; 
-        this.currentPath = this.getNextPath();
+        this.currentPath = this.getNextPath(this.spawnPos);
         this.setNewStats(options); 
+        this.receiver=new Receiver();
+        this.receiver.subscribe([
+            XENO_EVENTS.PLACED,
+            XENO_EVENTS.WALL_DIED,
+            XENO_EVENTS.ENEMY_DIED,
+            XENO_EVENTS.TURRET_DIED
+        ])
     }
 
     activate(options: Record<string, any>): void { }
@@ -119,7 +129,7 @@ export default class EnemyAI implements BattlerAI {
 
     moveOnePath(deltaT: number): void {
         if (this.currentPath.isDone()) {
-            this.currentPath = this.getNextPath();
+            this.currentPath = this.getNextPath(this.owner.position);
         } else {
             if (this.atkIfPathBlocked()) {
                 if (this.type !== ENEMY_TYPE.TANK)
@@ -133,9 +143,11 @@ export default class EnemyAI implements BattlerAI {
         }
     }
 
-    getNextPath(): NavigationPath {
+    getNextPath(pos:Vec2): NavigationPath {
         let stack = new Stack<Vec2>();
-        this.findPath();
+        if(this.path.length==0){
+            this.Pathfinding(pos);
+        }
         stack.push(this.path[this.routeIndex]);
         let path = new NavigationPath(stack);
         this.routeIndex = this.routeIndex + 1;
@@ -177,34 +189,109 @@ export default class EnemyAI implements BattlerAI {
     }
 
     
-    Pathfinding(){
+    Pathfinding(currentpos : Vec2){
+        this.routeIndex=0;
         let openlist: Array<Nodee>=[];
         let closedlist: Array<Nodee>=[];
         const floor = this.level.getFloor();
-        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos);, f: 0, g: 0, h: 0}; 
-        const startnodee : Nodee = {tileposition: floor.getColRowAt(this.owner.position), f: 0, g: 0, h: 0}; 
-        openlist.push(startnodee);
-        while (openlist.length !=0){
+        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos), f: 0, g: 0, h: 0, prev: null}; 
+        const startnodee : Nodee = {tileposition: floor.getColRowAt(currentpos), f: 0, g: 0, h: 0, prev: null}; 
+        openlist.unshift(startnodee);
+        while (openlist.length > 0){
             let currentnodee = openlist[0];
             let index=0;
+            let currentindex=0;
             openlist.forEach(nodee => {
                 if (nodee.f < currentnodee.f){
                     currentnodee = nodee;
+                    currentindex = index;
                 }
                 index = index +1;
             });
-            openlist.splice(index,1);
-            closedlist.push(currentnodee);
+            openlist.splice(currentindex,1);
+            closedlist.unshift(currentnodee);
+            if(currentnodee.tileposition.equals(targetnodee.tileposition)==true){
+                let current = currentnodee;
+                while (current){
+                    this.path.unshift(current.tileposition.mult(new Vec2(32,32)));
+                    current=current.prev;
+                }
+                console.log(this.path);
+                return;
+            }
+            let children: Array<Nodee> = [];
+            let node_position = new Vec2(currentnodee.tileposition.x,currentnodee.tileposition.y);
+            if  (this.level.findFriendAtColRow(new Vec2(node_position.x+0,node_position.y-1))==null){
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+0,node_position.y-1), f: 0, g: 0, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            else{
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+0,node_position.y-1), f: 0, g: 50, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            if  (this.level.findFriendAtColRow(new Vec2(node_position.x+1,node_position.y-0))==null){
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+1,node_position.y-0), f: 0, g: 0, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            else{
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+1,node_position.y-0), f: 0, g: 50, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            if  (this.level.findFriendAtColRow(new Vec2(node_position.x-0,node_position.y+1))==null){
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-0,node_position.y+1), f: 0, g: 0, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            else{
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-0,node_position.y+1), f: 0, g: 50, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            if  (this.level.findFriendAtColRow(new Vec2(node_position.x-1,node_position.y+0))==null){
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-1,node_position.y+0), f: 0, g: 0, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            else{
+                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-1,node_position.y+0), f: 0, g: 50, h: 0, prev: currentnodee};
+                children.unshift(newnodee);
+            }
+            children.forEach(nodee=>{
+                let flag1=0;
+                closedlist.forEach(nodeee=>{
+                   if(nodee.tileposition.equals(nodeee.tileposition)){
+                       flag1=1;
+                   } 
+                });
+                if(flag1==1){}
+                else{
+                    nodee.g = nodee.g+currentnodee.g+1;
+                    nodee.h = (nodee.tileposition.x-targetnodee.tileposition.x)*(nodee.tileposition.x-targetnodee.tileposition.x) 
+                    + (nodee.tileposition.y-targetnodee.tileposition.y)*(nodee.tileposition.y-targetnodee.tileposition.y);
+                    nodee.f = nodee.g+nodee.h;
+                    let flag2=0;
+                    openlist.forEach(nodeee=>{
+                        if (nodee.tileposition.equals(nodeee.tileposition) && nodee.g > nodeee.g){
+                            flag2=1;
+                        }
+                    });
+                    if(flag2==1){}
+                    else{
+                        openlist.unshift(nodee);
+                    }
+                }
+            });
         }
     }
 
     update(deltaT: number) {
-        if (!this.path.length) {
-            this.findPath();
+        while (this.receiver.hasNextEvent()) {
+            let event = this.receiver.getNextEvent();
+            this.handleEvent(event);
         }
-        else {
-            this.moveOnePath(deltaT);
-        }
+        this.moveOnePath(deltaT);
+    }
+
+    handleEvent(event: GameEvent) {
+        this.path= [];
+        this.currentPath = this.getNextPath(this.owner.position);
     }
 
     addEffect(effect: Effect<any>): void {
@@ -228,9 +315,7 @@ export default class EnemyAI implements BattlerAI {
     destroy(): void {
         throw new Error("Method not implemented.");
     }
-    handleEvent(event: GameEvent): void {
-        throw new Error("Method not implemented.");
-    }
+
 }
 
 export enum EnemyStates {
