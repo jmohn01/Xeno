@@ -17,18 +17,27 @@ import xeno_level from "../Scenes/xeno_level";
 import BattlerAI from "./BattlerAI";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 
-type Nodee = {
+type Node = {
     tileposition: Vec2;
     f: number;
     g: number;
     h: number;
-    prev: Nodee | null;
-  };
+    prev: Node | null;
+};
+
+const toPosString = (n: Node) => {
+    return `${n.tileposition.x} ${n.tileposition.y}`
+}
+
+const isInBound = (bd: { left: number, top: number, right: number, bot: number }, tilePos: Vec2): boolean => {
+    return tilePos.x > bd.left && tilePos.x < bd.right &&
+        tilePos.y > bd.top && tilePos.y < bd.bot;
+}
 
 export default class EnemyAI implements BattlerAI {
 
     range: number;
-    
+
     level: xeno_level;
 
     atk: PointAttack;
@@ -65,31 +74,30 @@ export default class EnemyAI implements BattlerAI {
     // Path to player
     path: Array<Vec2> = [];
 
-    reward: number; 
+    reward: number;
 
     type: ENEMY_TYPE;
 
     currentPath: NavigationPath;
 
-    battleManager: BattleManager; 
+    battleManager: BattleManager;
     receiver: Receiver;
 
     initializeAI(owner: AnimatedSprite, options: Record<string, any>): void {
         this.owner = owner;
-        const { basePos, spawnPos, battleManager, level, type } = options; 
-    
+        const { basePos, spawnPos, battleManager, level, type } = options;
+
         this.level = level;
         this.type = type;
         this.basePos = basePos;
         this.spawnPos = spawnPos;
-        this.battleManager = battleManager; 
+        this.battleManager = battleManager;
         this.currentPath = this.getNextPath(this.spawnPos);
-        this.setNewStats(options); 
-        this.receiver=new Receiver();
+        this.setNewStats(options);
+        this.receiver = new Receiver();
         this.receiver.subscribe([
             XENO_EVENTS.PLACED,
             XENO_EVENTS.WALL_DIED,
-            XENO_EVENTS.ENEMY_DIED,
             XENO_EVENTS.TURRET_DIED
         ])
     }
@@ -101,8 +109,8 @@ export default class EnemyAI implements BattlerAI {
             return;
         }
 
-        this.health -= ((100 - this.armor) / 100) * damage; 
-        
+        this.health -= ((100 - this.armor) / 100) * damage;
+
         if (this.health <= 0) {
             this.effects.forEach((e) => {
                 e.endEffect();
@@ -113,7 +121,7 @@ export default class EnemyAI implements BattlerAI {
             this.owner.animation.play(`${ENEMY_NAME[this.type]}_DIED`);
             setTimeout(() => {
                 this.emitter.fireEvent(XENO_EVENTS.ENEMY_DIED, { owner: this.owner, reward: this.reward })
-            }, 400); 
+            }, 400);
         }
     }
 
@@ -124,7 +132,7 @@ export default class EnemyAI implements BattlerAI {
         this.armor = armor;
         this.health = health;
         this.speed = speed;
-        this.reward = reward; 
+        this.reward = reward;
     }
 
     moveOnePath(deltaT: number): void {
@@ -137,15 +145,15 @@ export default class EnemyAI implements BattlerAI {
                 return;
             }
             else {
-                this.owner.animation.playIfNotAlready(`${ENEMY_NAME[this.type]}_MOVE`, true); 
+                this.owner.animation.playIfNotAlready(`${ENEMY_NAME[this.type]}_MOVE`, true);
                 this.owner.moveOnPath(this.speed * deltaT, this.currentPath);
             }
         }
     }
 
-    getNextPath(pos:Vec2): NavigationPath {
+    getNextPath(pos: Vec2): NavigationPath {
         let stack = new Stack<Vec2>();
-        if(this.path.length==0){
+        if (this.path.length == 0) {
             this.Pathfinding(pos);
         }
         stack.push(this.path[this.routeIndex]);
@@ -154,28 +162,8 @@ export default class EnemyAI implements BattlerAI {
         return path;
     }
 
-    atkIfPathBlocked(): boolean {
-        const floor = this.level.getFloor();
-        const rotation = Vec2.UP.angleToCCW(this.currentPath.getMoveDirection(this.owner));
-        const tilePosition = floor.getColRowAt(this.owner.position);
-        if ((rotation >= -0.5 && rotation < 0.7) || rotation > 5.5) {
-            tilePosition.add(new Vec2(0, -1));
-        }
-        else if (rotation > 0.9 && rotation < 2.3) {
-            tilePosition.add(new Vec2(-1, 0))
-        }
-        else if (rotation > 2.4 && rotation < 3.8) {
-
-            tilePosition.add(new Vec2(0, 1));
-        }
-        else if (rotation > 4 && rotation < 5.4) {
-            tilePosition.add(new Vec2(1, 0));
-        }
-        else {
-            console.log("Moving in impossible ways");
-            return false;
-        }
-        const target = this.level.findFriendAtColRow(tilePosition);
+    atkIfPathBlocked(): boolean {        
+        const target = this.level.findFriendsInRange(this.owner.position, 32)[0]; 
         if (!target) return false;
         this.atk.attack(this, target);
         return true;
@@ -188,92 +176,54 @@ export default class EnemyAI implements BattlerAI {
         return;
     }
 
-    
-    Pathfinding(currentpos : Vec2){
-        this.routeIndex=0;
-        let openlist: Array<Nodee>=[];
-        let closedlist: Array<Nodee>=[];
+
+    Pathfinding(currentpos: Vec2) {
+        this.routeIndex = 0;
+        let openlist: Array<Node> = [];
+        let closedlist = new Set();
         const floor = this.level.getFloor();
-        const targetnodee : Nodee = {tileposition: floor.getColRowAt(this.basePos), f: 0, g: 0, h: 0, prev: null}; 
-        const startnodee : Nodee = {tileposition: floor.getColRowAt(currentpos), f: 0, g: 0, h: 0, prev: null}; 
+        const bounds = this.level.getBounds();
+
+        const targetnodee: Node = { tileposition: floor.getColRowAt(this.basePos), f: 0, g: 0, h: 0, prev: null };
+        const startnodee: Node = { tileposition: floor.getColRowAt(currentpos), f: 0, g: 0, h: 0, prev: null };
         openlist.unshift(startnodee);
-        while (openlist.length > 0){
+        while (openlist.length > 0) {
             let currentnodee = openlist[0];
-            let index=0;
-            let currentindex=0;
+            let index = 0;
+            let currentindex = 0;
             openlist.forEach(nodee => {
-                if (nodee.f < currentnodee.f){
+                if (nodee.f < currentnodee.f) {
                     currentnodee = nodee;
                     currentindex = index;
                 }
-                index = index +1;
+                index = index + 1;
             });
-            openlist.splice(currentindex,1);
-            closedlist.unshift(currentnodee);
-            if(currentnodee.tileposition.equals(targetnodee.tileposition)==true){
+            openlist.splice(currentindex, 1);
+            closedlist.add(toPosString(currentnodee));
+            if (currentnodee.tileposition.equals(targetnodee.tileposition) == true) {
                 let current = currentnodee;
-                while (current){
-                    this.path.unshift(current.tileposition.mult(new Vec2(32,32)));
-                    current=current.prev;
+                while (current) {
+                    this.path.unshift(current.tileposition.mult(new Vec2(32, 32)));
+                    current = current.prev;
                 }
-                console.log(this.path);
                 return;
             }
-            let children: Array<Nodee> = [];
-            let node_position = new Vec2(currentnodee.tileposition.x,currentnodee.tileposition.y);
-            if  (this.level.findFriendAtColRow(new Vec2(node_position.x+0,node_position.y-1))==null){
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+0,node_position.y-1), f: 0, g: 0, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            else{
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+0,node_position.y-1), f: 0, g: 50, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            if  (this.level.findFriendAtColRow(new Vec2(node_position.x+1,node_position.y-0))==null){
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+1,node_position.y-0), f: 0, g: 0, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            else{
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x+1,node_position.y-0), f: 0, g: 50, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            if  (this.level.findFriendAtColRow(new Vec2(node_position.x-0,node_position.y+1))==null){
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-0,node_position.y+1), f: 0, g: 0, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            else{
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-0,node_position.y+1), f: 0, g: 50, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            if  (this.level.findFriendAtColRow(new Vec2(node_position.x-1,node_position.y+0))==null){
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-1,node_position.y+0), f: 0, g: 0, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            else{
-                let newnodee: Nodee = {tileposition: new Vec2(node_position.x-1,node_position.y+0), f: 0, g: 50, h: 0, prev: currentnodee};
-                children.unshift(newnodee);
-            }
-            children.forEach(nodee=>{
-                let flag1=0;
-                closedlist.forEach(nodeee=>{
-                   if(nodee.tileposition.equals(nodeee.tileposition)){
-                       flag1=1;
-                   } 
-                });
-                if(flag1==1){}
-                else{
-                    nodee.g = nodee.g+currentnodee.g+1;
-                    nodee.h = (nodee.tileposition.x-targetnodee.tileposition.x)*(nodee.tileposition.x-targetnodee.tileposition.x) 
-                    + (nodee.tileposition.y-targetnodee.tileposition.y)*(nodee.tileposition.y-targetnodee.tileposition.y);
-                    nodee.f = nodee.g+nodee.h;
-                    let flag2=0;
-                    openlist.forEach(nodeee=>{
-                        if (nodee.tileposition.equals(nodeee.tileposition) && nodee.g > nodeee.g){
-                            flag2=1;
+            let children: Array<Node> = this.getLegalChildren(currentnodee, bounds)
+            children.forEach(nodee => {
+                let isExplored = closedlist.has(toPosString(nodee))
+                if (!isExplored) {
+                    nodee.g = nodee.g + currentnodee.g + 1;
+                    nodee.h = (nodee.tileposition.x - targetnodee.tileposition.x) * (nodee.tileposition.x - targetnodee.tileposition.x)
+                        + (nodee.tileposition.y - targetnodee.tileposition.y) * (nodee.tileposition.y - targetnodee.tileposition.y);
+                    nodee.f = nodee.g + nodee.h;
+                    let flag2 = 0;
+                    openlist.forEach(nodeee => {
+                        if (nodee.tileposition.equals(nodeee.tileposition) && nodee.g > nodeee.g) {
+                            flag2 = 1;
                         }
                     });
-                    if(flag2==1){}
-                    else{
+                    if (flag2 == 1) { }
+                    else {
                         openlist.unshift(nodee);
                     }
                 }
@@ -281,16 +231,38 @@ export default class EnemyAI implements BattlerAI {
         }
     }
 
+    getLegalChildren(node: Node, bd: { left: number, top: number, right: number, bot: number }): Node[] {
+        const pos = node.tileposition;
+        const candidatePos = [
+            new Vec2(pos.x - 1, pos.y),
+            new Vec2(pos.x + 1, pos.y),
+            new Vec2(pos.x, pos.y - 1),
+            new Vec2(pos.x, pos.y + 1)
+        ];
+        return candidatePos
+            .filter((pos) => isInBound(bd, pos))
+            .map((pos) => {
+            return {
+                tileposition: pos,
+                f: 0,
+                g: this.level.findFriendAtColRow(pos) ? 50 : 0,
+                h: 0,
+                prev: node
+            }
+        })
+    }
+
     update(deltaT: number) {
-        while (this.receiver.hasNextEvent()) {
-            let event = this.receiver.getNextEvent();
-            this.handleEvent(event);
-        }
-        this.moveOnePath(deltaT);
+        // while (this.receiver.hasNextEvent()) {
+        //     let event = this.receiver.getNextEvent();
+        //     this.handleEvent(event);
+        // }
+        if (!this.level.isPaused())
+            this.moveOnePath(deltaT);
     }
 
     handleEvent(event: GameEvent) {
-        this.path= [];
+        this.path = [];
         this.currentPath = this.getNextPath(this.owner.position);
     }
 

@@ -1,8 +1,8 @@
 {
     "1_1": {
-        "gold": 1000,
-        "baseHP": 10,
-        "baseArmor": 0, 
+        "gold": 400,
+        "baseHP": 300,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",
@@ -12,8 +12,8 @@
         "waves": [
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0]
-            
         ],
         "spawns": [
             {"x": 1, "y": 1},
@@ -23,9 +23,9 @@
         ]
     },
     "1_2": {
-        "gold": 1000,
-        "baseHP": 1000,
-        "baseArmor": 0, 
+        "gold": 600,
+        "baseHP": 600,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",
@@ -48,9 +48,9 @@
         ]
     },
     "2_1": {
-        "gold": 1000,
-        "baseHP": 1000,
-        "baseArmor": 0, 
+        "gold": 800,
+        "baseHP": 500,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",
@@ -78,9 +78,9 @@
         ]
     },
     "2_2": {
-        "gold": 1000,
-        "baseHP": 1000,
-        "baseArmor": 0, 
+        "gold": 1200,
+        "baseHP": 600,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",
@@ -94,9 +94,9 @@
             "ENEMY"
         ],
         "waves": [
-            [2, 2, 0, 0, 0],
-            [2, 2, 2, 0, 0, 0, 0, 0, 0, 0],
-            [2, 2, 2],
+            [1, 1, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+            [2, 2, 1],
             [2, 2, 2, 1, 1, 1, 1],
             [1, 1, 1, 1, 0]
         ],
@@ -110,9 +110,9 @@
         ]
     },
     "3_1": {
-        "gold": 1000,
-        "baseHP": 1000,
-        "baseArmor": 0, 
+        "gold": 1200,
+        "baseHP": 600,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",
@@ -141,9 +141,9 @@
         ]
     },
     "3_2": {
-        "gold": 1000,
-        "baseHP": 1000,
-        "baseArmor": 0, 
+        "gold": 900,
+        "baseHP": 600,
+        "baseArmor": 20, 
         "friendAllowed": [
             "WALL",
             "BEAM",

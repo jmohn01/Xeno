@@ -500,9 +500,9 @@ export default class xeno_level extends Scene {
                         this.gameoverBtn.visible = false;
                     }
                     if (this.nextLevel) {
-                        const unlockedLevels: any = JSON.parse(window.localStorage.getItem('unlockedLevels')); 
-                        unlockedLevels[this.nextLevel] = true; 
-                        window.localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels)); 
+                        const unlockedLevels: any = JSON.parse(window.localStorage.getItem('unlockedLevels'));
+                        unlockedLevels[this.nextLevel] = true;
+                        window.localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels));
                     }
                     this.UI.setHidden(true);
                     this.primary.setHidden(true);
@@ -523,11 +523,11 @@ export default class xeno_level extends Scene {
                 trapAI.attack();
                 break;
             case XENO_EVENTS.SPAWN_NEXT_WAVE:
-                this.state.currentWave++;
-                this.state.currentWaveEnemy = 0;
                 if (this.state.currentWave === this.state.maxWave) {
                     return;
                 }
+                this.state.currentWaveEnemy = 0;
+                this.state.currentWave++;
                 this.spawnWave();
                 this.updateLevelUI();
                 break;
@@ -569,7 +569,7 @@ export default class xeno_level extends Scene {
             if (Input.isMouseJustPressed(0)) {
 
                 const clickPos = Input.getGlobalMousePressPosition().clone();
-                console.log(clickPos);
+                console.log(this.floor.getColRowAt(clickPos));
                 if (clickPos.x < UI_POSITIONS.RIGHT_UI_BORDER) {
                     if (clickPos.y > UI_POSITIONS.BOT_UI_BORDER) {
                         if (
@@ -836,6 +836,8 @@ export default class xeno_level extends Scene {
                 this.errorLabel.text = 'Error: Not enough money';
                 return;
             }
+            if (cost) 
+                this.state.gold -= cost; 
             this.state.selected.upgrade();
             this.updateSelectedUI();
             this.updateLevelUI();
@@ -849,8 +851,9 @@ export default class xeno_level extends Scene {
     }
 
     spawnWave() {
+        console.log("WAVE: ", this.state.currentWave);
         const spawnEnemy = () => {
-            const enemyType = this.levelData.waves[this.state.currentWave][this.state.currentWaveEnemy];
+            const enemyType = this.levelData.waves[this.state.currentWave - 1][this.state.currentWaveEnemy];
             console.log(`SPAWNED ${ENEMY_NAME[enemyType]}, currentWaveEnemy: ${this.state.currentWaveEnemy}`);
 
             const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
@@ -862,10 +865,11 @@ export default class xeno_level extends Scene {
             console.log("STOPPED");
             this.spawnTimer.pause();
             setTimeout(() => {
+                console.log("FIRED");
                 this.emitter.fireEvent(XENO_EVENTS.SPAWN_NEXT_WAVE);
             }, 5000)
         }
-        this.waveTimer = new Timer(1000 * this.levelData.waves[this.state.currentWave].length + 100, stopTimer);
+        this.waveTimer = new Timer(1000 * this.levelData.waves[this.state.currentWave - 1].length + 100, stopTimer);
         this.spawnTimer.start();
         this.waveTimer.start();
     }
@@ -890,7 +894,6 @@ export default class xeno_level extends Scene {
             // @ts-ignore
             armor: this.levelData[this.level]['baseArmor']
         });
-        base.setCollisionShape(new AABB(Vec2.ZERO, base.sizeWithZoom));
         const currColRow = this.floor.getColRowAt(position);
 
         base.position = currColRow.clone().mult(new Vec2(32, 32));
@@ -929,7 +932,6 @@ export default class xeno_level extends Scene {
         if (!wall) {
             wall = this.add.animatedSprite('walls', 'primary');
             wall.addAI(WallAI, {});
-            wall.setCollisionShape(new AABB(Vec2.ZERO, wall.sizeWithZoom));
         }
 
         let leftTile: AnimatedSprite = null, rightTile: AnimatedSprite = null, topTile: AnimatedSprite = null, botTile: AnimatedSprite = null;
@@ -1036,7 +1038,7 @@ export default class xeno_level extends Scene {
         enemy.animation.playIfNotAlready(`${ENEMY_NAME[type]}_MOVE`, true);
         enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
-        let collisioncircle : Circle = new Circle(enemy.position,8);
+        let collisioncircle: Circle = new Circle(enemy.position, 8);
         enemy.addPhysics(collisioncircle);
         enemy.setGroup(XENO_ACTOR_TYPE.ENEMY);
         enemy.setAIActive(true, {});
@@ -1081,10 +1083,14 @@ export default class xeno_level extends Scene {
     }
 
     findFriendsInRange(from: Vec2, range: number): BattlerAI[] {
-        return [
-            ...this.aliveWalls.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI)),
-            ...this.aliveTurrets.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI))
-        ]
+        if (from.distanceTo(this.base.position) <= range) return [(this.base.ai as BattlerAI)];
+        else {
+            return [
+
+                ...this.aliveWalls.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI)),
+                ...this.aliveTurrets.filter((e) => from.distanceTo(e.position) <= range).map((e) => (e.ai as BattlerAI))
+            ]
+        }
     }
 
     findFriendAtColRow(colRow: Vec2): BattlerAI | undefined {
@@ -1127,12 +1133,17 @@ export default class xeno_level extends Scene {
         return this.enemyData[ENEMY_NAME[type]];
     }
 
-    getTooltip(type: TURRET_TYPE | WALL_TYPE | TRAP_TYPE | 'ENEMY' | 'WALL' | 'BASE') {
+    getTooltip(type: TURRET_TYPE | WALL_TYPE | TRAP_TYPE | ENEMY_TYPE | 'ENEMY' | 'WALL' | 'BASE' ) {
         switch (type) {
             case 'BASE':
                 return 'Generator: Protect this well.'
+            case ENEMY_TYPE.BASIC:
             case 'ENEMY':
-                return 'UMA: Most basic meele uma.'
+                return 'BAISC UMA: Is that a purple zombie?'
+            case ENEMY_TYPE.FAST:
+                return 'FAST UMA: Don\'t get stung by this jellyfish'
+            case ENEMY_TYPE.TANK:
+                return 'TANK UNA: This is not dragon quest.'
             case 'WALL':
             case WALL_TYPE.DIRT:
                 return 'Dirt wall: Minecraft wall. Can\'t really defend. DIRT cheap.'
@@ -1158,11 +1169,21 @@ export default class xeno_level extends Scene {
                 return 'ROCKET TURRET: Bombard your enemy with rocket barrage.'
             case TURRET_TYPE.BANK:
                 return 'BANK: Mysterious money printing machine (literally).'
+                
         }
     }
 
     getFloor() {
         return this.floor;
+    }
+
+    getBounds() {
+        return {
+            top: 0,
+            left: 0,
+            bot: 22,
+            right: 44
+        }
     }
 
 }

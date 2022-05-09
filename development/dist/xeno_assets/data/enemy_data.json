@@ -1,32 +1,32 @@
 {
     "BASIC":{
-        "health": 80,
+        "health": 50,
         "armor": 0,
         "speed": 40,
         "damage": 5,
         "cooldown": 1000,
         "color": "#000000",
-        "reward": 10,
+        "reward": 25,
         "atkEffect": {}
     },
     "FAST": {
         "health": 80,
-        "armor": 0,
+        "armor": 10,
         "speed": 60,
-        "damage": 5,
+        "damage": 10,
         "cooldown": 1000,
         "color": "#000000",
-        "reward": 30,
+        "reward": 40,
         "atkEffect": {}
     },
     "TANK": {
         "health": 180,
-        "armor": 5,
+        "armor": 20,
         "speed": 20,
         "damage": 15,
-        "cooldown": 1000,
+        "cooldown": 5000,
         "color": "#000000",
-        "reward": 80,
+        "reward": 100,
         "atkEffect": {}
     }   
 }
