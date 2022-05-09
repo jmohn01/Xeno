@@ -23,7 +23,7 @@
         ]
     },
     "1_2": {
-        "gold": 600,
+        "gold": 800,
         "baseHP": 600,
         "baseArmor": 20, 
         "friendAllowed": [
