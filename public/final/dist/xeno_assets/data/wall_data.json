@@ -1,0 +1,22 @@
+{
+    "placingCost": 50, 
+    "DIRT": {
+        "health": 60,
+        "armor": 10,
+        "upgradeCost": 100
+    },
+    "WOOD": {
+        "health": 120,
+        "armor": 20,
+        "upgradeCost": 200
+    },
+    "STONE": {
+        "health": 180,
+        "armor": 30,
+        "upgradeCost": 300
+    },
+    "FIBER": {
+        "health": 240,
+        "armor": 40
+    }
+}
