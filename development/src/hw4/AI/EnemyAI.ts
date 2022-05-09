@@ -112,6 +112,7 @@ export default class EnemyAI implements BattlerAI {
         this.health -= ((100 - this.armor) / 100) * damage;
 
         if (this.health <= 0) {
+            this.path = [];
             this.effects.forEach((e) => {
                 e.endEffect();
             })
