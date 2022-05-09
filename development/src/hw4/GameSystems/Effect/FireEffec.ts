@@ -19,7 +19,6 @@ export class FireEffect extends Effect<FireEffect> {
 
     constructor(duration: number, ticks: number, damage: number, target: BattlerAI) {
         super();
-        console.log(duration, ticks, damage, target);
         this.target = target;
         this.damage = damage;
         this.dotTimer = new Timer(duration / ticks, this.dot, true);

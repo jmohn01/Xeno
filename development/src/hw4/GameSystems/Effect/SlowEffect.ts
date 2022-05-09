@@ -28,13 +28,11 @@ export class SlowEffect extends Effect<SlowEffect> {
 
     applyEffect(): void { 
         this.target.speed *= this.percent;
-        console.log(this.target.speed);
         this.durationTimer.start();
     }
 
     endEffect = () => {
         this.target.speed /= this.percent;
-        console.log(this.target.speed);
         this.durationTimer.pause(); 
         this.target.removeEffect(this.id);
     }

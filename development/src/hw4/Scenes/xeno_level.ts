@@ -853,7 +853,7 @@ export default class xeno_level extends Scene {
         const spawnEnemy = () => {
             const enemyType = this.levelData.waves[this.state.currentWave - 1][this.state.currentWaveEnemy];
             console.log(`SPAWNED ${ENEMY_NAME[enemyType]}, currentWaveEnemy: ${this.state.currentWaveEnemy}`);
-            if (enemyType) {
+            if (enemyType !== undefined) {
                 const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
                 this.placeEnemy(this.floor.getColRowAt(spawnPos), enemyType);
                 this.state.currentWaveEnemy++;
@@ -865,6 +865,7 @@ export default class xeno_level extends Scene {
             this.spawnTimer.pause();
             setTimeout(() => {
                 console.log("FIRED");
+                this.state.aliveEnemies -= this.levelData.waves[this.state.currentWave - 1].length - this.state.currentWaveEnemy; 
                 this.emitter.fireEvent(XENO_EVENTS.SPAWN_NEXT_WAVE);
             }, 5000)
         }
@@ -1017,9 +1018,7 @@ export default class xeno_level extends Scene {
     }
 
     placeEnemy(tilePosition: Vec2, type: ENEMY_TYPE) {
-        console.log(`DEAD ENEMIES: ${this.deadEnemies.map((e) => e.id)}`);
         let enemy = this.deadEnemies.pop();
-        console.log(ENEMY_NAME[type]);
         if (!enemy) {
             enemy = this.add.animatedSprite("enemy", "primary");
             enemy.addAI(EnemyAI, {
@@ -1031,10 +1030,9 @@ export default class xeno_level extends Scene {
                 type: type
             });
         } else {
-            (enemy.ai as EnemyAI).setNewStats(this.getEnemyData(type));
+            (enemy.ai as EnemyAI).setNewStats({...this.getEnemyData(type), type});
         }
-
-        enemy.animation.playIfNotAlready(`${ENEMY_NAME[type]}_MOVE`, true);
+        enemy.animation.play(`${ENEMY_NAME[type]}_MOVE`, true);
         enemy.position = tilePosition.clone().mult(new Vec2(32, 32));
         enemy.visible = true;
         let collisioncircle: Circle = new Circle(enemy.position, 8);
@@ -1042,7 +1040,6 @@ export default class xeno_level extends Scene {
         enemy.setGroup(XENO_ACTOR_TYPE.ENEMY);
         enemy.setAIActive(true, {});
         this.aliveEnemies.push(enemy);
-        console.log(`ALIVE ENEMIES: ${this.aliveEnemies.map((e) => e.id)}`);
     }
 
     updateNeighbors(wall: AnimatedSprite) {

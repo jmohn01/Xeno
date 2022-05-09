@@ -128,12 +128,13 @@ export default class EnemyAI implements BattlerAI {
 
     setNewStats(data: Record<string, any>): void {
         console.log(data);
-        const { armor, health, speed, damage, cooldown, reward, atkEffect } = data;
+        const { armor, health, speed, damage, cooldown, reward, atkEffect, type } = data;
         this.atk = new PointAttack(damage, cooldown, new EmptyAnimation(), atkEffect, this.battleManager)
         this.armor = armor;
         this.health = health;
         this.speed = speed;
         this.reward = reward;
+        this.type = type; 
     }
 
     moveOnePath(deltaT: number): void {
@@ -284,12 +285,10 @@ export default class EnemyAI implements BattlerAI {
         }
         this.effects.push(effect);
         effect.applyEffect();
-        console.log("ENEMY %d added Effect", this.owner.id, effect);
     }
 
     removeEffect(id: number): void {
         this.effects = this.effects.filter((e) => e.id !== id);
-        console.log("ENEMY %d removed Effect", this.owner.id, this);
     }
 
     destroy(): void {
