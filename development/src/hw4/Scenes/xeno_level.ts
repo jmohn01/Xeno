@@ -853,10 +853,11 @@ export default class xeno_level extends Scene {
         const spawnEnemy = () => {
             const enemyType = this.levelData.waves[this.state.currentWave - 1][this.state.currentWaveEnemy];
             console.log(`SPAWNED ${ENEMY_NAME[enemyType]}, currentWaveEnemy: ${this.state.currentWaveEnemy}`);
-
-            const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
-            this.placeEnemy(this.floor.getColRowAt(spawnPos), enemyType);
-            this.state.currentWaveEnemy++;
+            if (enemyType) {
+                const spawnPos = this.spawns[Math.floor(Math.random() * this.spawns.length)].position;
+                this.placeEnemy(this.floor.getColRowAt(spawnPos), enemyType);
+                this.state.currentWaveEnemy++;
+            }
         }
         this.spawnTimer = new Timer(1000, spawnEnemy, true);
         const stopTimer = () => {
