@@ -5,30 +5,30 @@
             "atkType": "PointAtk",
             "color": "#FFDA00",
             "range": 100,
-            "damage": 10,
-            "cooldown": 1000,
+            "damage": 20,
+            "cooldown": 2000,
             "armor": 0,
             "health": 15,
             "atkEffect": {},
-            "upgradeCost": 100
+            "upgradeCost": 200
         },
         "SILVER": {
             "atkType": "PointAtk",
             "color": "#FFDA00",
             "range": 100,
-            "cooldown": 1000,
-            "damage": 20,
+            "cooldown": 2000,
+            "damage": 30,
             "armor": 0,
             "health": 25,
             "atkEffect": {},
-            "upgradeCost": 100
+            "upgradeCost": 250
         },
         "GOLD": {
             "atkType": "PointAtk",
             "color": "#FF8000",
             "range": 200,
-            "cooldown": 1000,
-            "damage": 25,
+            "cooldown": 2000,
+            "damage": 35,
             "armor": 0,
             "health": 30,
             "atkEffect": {

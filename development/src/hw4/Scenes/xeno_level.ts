@@ -626,8 +626,6 @@ export default class xeno_level extends Scene {
 
     updateSelectedUI() {
         if (!this.state.selected) {
-            this.atkLabel.visible = false;
-            this.hpLabel.visible = false;
             this.selectionHighlight.visible = false;
             this.selectingLabel.text = 'Selecting: ';
             return;
@@ -643,8 +641,8 @@ export default class xeno_level extends Scene {
         this.fireLabel.text = atkEffect.fire ? `${atkEffect.fire.damage}/tick ${atkEffect.fire.ticks}t` : '/';
         this.slowLabel.text = atkEffect.slow ? `-${((1 - atkEffect.slow.percent) * 100).toFixed(1)}% ${atkEffect.slow.duration / 1000}s` : '/';
         this.acidLabel.text = atkEffect.acid ? `-${atkEffect.acid.reduction} ${atkEffect.acid.duration / 1000}s` : '/';
-        this.atkLabel.visible = true;
-        this.hpLabel.visible = true;
+        // this.atkLabel.visible = true;
+        // this.hpLabel.visible = true;
         this.selectionHighlight.visible = true;
 
         console.log(friendAI);

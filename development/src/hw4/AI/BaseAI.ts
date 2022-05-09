@@ -28,6 +28,9 @@ export default class BaseAI implements BattlerAI {
 
 
     damage(damage: number): void {
+        if (this.health < 0) {
+            return; 
+        }
         this.health -= ((100 - this.armor) / 100) * damage; 
         this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: 'takedmg', loop: false, holdReference: false });
         if (this.health <= 0) {

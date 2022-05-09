@@ -257,8 +257,15 @@ export default class EnemyAI implements BattlerAI {
         //     let event = this.receiver.getNextEvent();
         //     this.handleEvent(event);
         // }
-        if (!this.level.isPaused())
+        if (this.level.isPaused()) {
+            this.atk.pauseCD(); 
+            this.effects.forEach((e) => e.pause());
+        } else {
+            if (this.atk.isPaused())
+                this.atk.resumeCD(); 
+            this.effects.forEach((e) => e.resume());
             this.moveOnePath(deltaT);
+        }
     }
 
     handleEvent(event: GameEvent) {
