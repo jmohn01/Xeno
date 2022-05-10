@@ -1,0 +1,80 @@
+﻿body
+{
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#game {
+    text-align: center;
+}
+
+#level {
+    line-height: normal;
+}
+
+#statusbar {
+    line-height: 1em;
+}
+
+.tileLandEmpty {
+    fill: #7A7A7A; /* lightgray */
+    stroke-width: 0;
+}
+
+.tileLandEmpty:hover {
+    stroke-width: 1;
+    stroke: #00FF00; /* green */
+}
+
+.tileLandOccupied {
+    fill: #7A7A7A; /* lightgray */
+}
+
+.tilePath {
+    fill: #313131; /* darkgray */
+}
+
+.attacker {
+    fill: #FF3333; /* lightred */
+}
+
+.attackerHealthy {
+    fill: #FF3333; /* lightred */
+}
+
+.attackerHurt {
+    fill: #FF7070; /* lightred */
+}
+
+.attackerCritical {
+    fill: #FFADAD; /* lightred */
+}
+
+.defender {
+    fill: #0047B2; /* blue */
+}
+
+.bullet {
+    fill: #FFFF00; /* yellow */
+}
+
+.lives {
+    display: inline-block;
+    width: 266px;
+}
+
+.points {
+    display: inline-block;
+    width: 266px;
+}
+
+.nextWave {
+    display: inline-block;
+    width: 266px;
+}
+
+.popup {
+    font-weight: bold;
+    color: rgb(35, 22, 212);
+    text-align: center;
+}
+
